@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "Strona główna";
+}
+
+<div class="container py-5">
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+        <div class="container-fluid py-4">
+            <h1 class="display-5 fw-bold">Aplikacja do tworzenia gier PBF</h1>
+            <p class="col-md-8 fs-5">
+                System umożliwia zarządzanie użytkownikami i postaciami w grach Play By Forum.
+                Użytkownicy mogą przeglądać profile, postacie oraz podstawowe informacje o świecie gry.
+            </p>
+
+            <div class="mt-4">
+                <a asp-controller="CharacterModels" asp-action="Index" class="btn btn-primary btn-lg me-2">
+                    Moje postacie
+                </a>
+
+                <a asp-controller="Users" asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                    Użytkownicy
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Postacie</h3>
+                    <p class="card-text">
+                        Tworzenie i przegląd postaci wraz z podstawowymi statystykami i opisem.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Użytkownicy</h3>
+                    <p class="card-text">
+                        Podgląd profili użytkowników oraz przypisanych do nich postaci.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Rozgrywka PBF</h3>
+                    <p class="card-text">
+                        System stanowi bazę do rozwijania mechanik forumowej gry fabularnej.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

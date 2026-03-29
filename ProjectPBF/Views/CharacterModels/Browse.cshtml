@@ -1,0 +1,56 @@
+﻿@model IEnumerable<ProjectPBF.Models.CharacterModel>
+
+@{
+    ViewData["Title"] = "Przegląd postaci";
+}
+
+<div class="container py-4">
+    <h1 class="mb-4">Przegląd postaci</h1>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Brak postaci do wyświetlenia.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var character in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrWhiteSpace(character.AvatarUrl))
+                        {
+                            <img src="@character.AvatarUrl" class="card-img-top" alt="Avatar postaci" style="height: 250px; object-fit: cover;" />
+                        }
+
+                        <div class="card-body">
+                            <h5 class="card-title">@character.Name</h5>
+
+                            <p class="card-text mb-2">
+                                <strong>Właściciel:</strong> @(character.User?.Nick ?? "Brak danych")
+                            </p>
+
+                            <p class="card-text mb-3">
+                                <strong>Status:</strong>
+                                @if (character.IsAccepted)
+                                {
+                                    <span class="badge bg-success">Zatwierdzona</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Oczekuje</span>
+                                }
+                            </p>
+
+                            <a asp-controller="CharacterModels" asp-action="Details" asp-route-id="@character.Id" class="btn btn-primary">
+                                Szczegóły
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

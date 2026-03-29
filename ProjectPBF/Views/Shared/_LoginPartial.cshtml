@@ -1,0 +1,44 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using ProjectPBF.Models
+@inject SignInManager<UserModel> SignInManager
+@inject UserManager<UserModel> UserManager
+
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var currentUser = await UserManager.GetUserAsync(User);
+
+        <li class="nav-item d-flex align-items-center">
+            <a class="nav-link text-dark d-flex align-items-center" asp-area="Identity" asp-page="/Account/Manage/Index" title="Zarządzaj kontem">
+                <span class="me-2">Zalogowany jako @(currentUser?.Nick ?? User.Identity?.Name)</span>
+
+                @if (currentUser != null && !string.IsNullOrEmpty(currentUser.AvatarUrl))
+                {
+                    <img src="@currentUser.AvatarUrl"
+                         alt="User Avatar"
+                         style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid #007bff;" />
+                }
+                else
+                {
+                    <div style="width: 30px; height: 30px; border-radius: 50%; background-color: #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666;">
+                        ?
+                    </div>
+                }
+            </a>
+        </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </li>
+    }
+</ul>
