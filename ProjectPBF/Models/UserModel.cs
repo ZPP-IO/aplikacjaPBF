@@ -22,6 +22,12 @@ namespace ProjectPBF.Models
 
         public DateTime? LastSeenAt { get; set; }
 
+        public DateTime? ApprovedAt { get; set; }
+
+        public int? ApprovedByUserId { get; set; }
+
+        public UserModel? ApprovedByUser { get; set; }
+
         public ICollection<CharacterModel> Characters { get; set; } = new List<CharacterModel>();
     }
 }

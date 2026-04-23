@@ -36,6 +36,15 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Użytkownicy</a>
                         </li>
 
+                        @if (User.IsInRole("Administrator") || User.IsInRole("GameMaster"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="UserApproval" asp-action="Index">
+                                    Akceptacja użytkowników
+                                </a>
+                            </li>
+                        }
+
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Informacje</a>
                         </li>

@@ -40,6 +40,13 @@ namespace ProjectPBF.Data
 
                 entity.HasIndex(x => x.Nick)
                     .IsUnique();
+
+                entity.HasIndex(x => x.AccountStatus);
+
+                entity.HasOne(x => x.ApprovedByUser)
+                    .WithMany()
+                    .HasForeignKey(x => x.ApprovedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             builder.Entity<CharacterModel>(entity =>

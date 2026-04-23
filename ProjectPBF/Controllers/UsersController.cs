@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectPBF.Data;
+using ProjectPBF.Models;
 using ProjectPBF.ViewModels;
-using Microsoft.AspNetCore.Identity;
 
 namespace ProjectPBF.Controllers
 {
@@ -11,12 +12,12 @@ namespace ProjectPBF.Controllers
     public class UsersController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<UserModel> _userManager;
 
-        public UsersController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public UsersController(ApplicationDbContext context, UserManager<UserModel> userManager)
         {
             _context = context;
-            _userManager = userManager; 
+            _userManager = userManager;
         }
 
         // Lista wszystkich użytkowników
@@ -57,8 +58,9 @@ namespace ProjectPBF.Controllers
             };
 
             return View(viewModel);
-
         }
+
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> MakeAdmin(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -68,12 +70,12 @@ namespace ProjectPBF.Controllers
                 return Content("Nie znaleziono użytkownika");
             }
 
-            await _userManager.AddToRoleAsync(user, "ADMIN");
+            await _userManager.AddToRoleAsync(user, "Administrator");
 
-            return Content("Dodano admina");
+            return Content("Dodano administratora");
         }
-        // Odpal aplikację i wejdź w https://localhost:xxxx/Users/MakeAdmin?email=twoj@email.com
-        // i masz admina
+
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> MakeGM(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -83,11 +85,9 @@ namespace ProjectPBF.Controllers
                 return Content("Nie znaleziono użytkownika");
             }
 
-            await _userManager.AddToRoleAsync(user, "GM");
+            await _userManager.AddToRoleAsync(user, "GameMaster");
 
-            return Content("Dodano GMa");
+            return Content("Dodano MG");
         }
-
-
     }
 }
