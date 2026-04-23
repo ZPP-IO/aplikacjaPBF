@@ -29,5 +29,7 @@ namespace ProjectPBF.Models
         public UserModel? ApprovedByUser { get; set; }
 
         public ICollection<CharacterModel> Characters { get; set; } = new List<CharacterModel>();
+
+        public ICollection<CampaignModel> LedCampaigns { get; set; } = new List<CampaignModel>();
     }
 }

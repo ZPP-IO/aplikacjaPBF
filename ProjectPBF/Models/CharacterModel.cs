@@ -38,5 +38,7 @@ namespace ProjectPBF.Models
         public int UserId { get; set; }
 
         public UserModel User { get; set; } = null!;
+
+        public ICollection<CampaignCharacterModel> CampaignCharacters { get; set; } = new List<CampaignCharacterModel>();
     }
 }

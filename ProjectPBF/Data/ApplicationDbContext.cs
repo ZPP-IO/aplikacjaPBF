@@ -14,6 +14,8 @@ namespace ProjectPBF.Data
         }
 
         public DbSet<CharacterModel> CharacterModels { get; set; } = null!;
+        public DbSet<CampaignModel> CampaignModels { get; set; } = null!;
+        public DbSet<CampaignCharacterModel> CampaignCharacterModels { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -75,6 +77,59 @@ namespace ProjectPBF.Data
                 entity.HasOne(x => x.User)
                     .WithMany(x => x.Characters)
                     .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<CampaignModel>(entity =>
+            {
+                entity.Property(x => x.Title)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(x => x.Description)
+                    .IsRequired()
+                    .HasMaxLength(4000);
+
+                entity.Property(x => x.Status)
+                    .HasConversion<int>()
+                    .HasDefaultValue(CampaignStatus.Draft);
+
+                entity.Property(x => x.CreatedAt)
+                    .HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(x => x.GameMasterId);
+                entity.HasIndex(x => x.Status);
+
+                entity.HasOne(x => x.GameMaster)
+                    .WithMany(x => x.LedCampaigns)
+                    .HasForeignKey(x => x.GameMasterId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<CampaignCharacterModel>(entity =>
+            {
+                entity.Property(x => x.Status)
+                    .HasConversion<int>()
+                    .HasDefaultValue(ParticipationStatus.Pending);
+
+                entity.Property(x => x.JoinedAt)
+                    .HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(x => x.CampaignId);
+                entity.HasIndex(x => x.CharacterId);
+                entity.HasIndex(x => x.Status);
+
+                entity.HasIndex(x => new { x.CampaignId, x.CharacterId })
+                    .IsUnique();
+
+                entity.HasOne(x => x.Campaign)
+                    .WithMany(x => x.CampaignCharacters)
+                    .HasForeignKey(x => x.CampaignId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.Character)
+                    .WithMany(x => x.CampaignCharacters)
+                    .HasForeignKey(x => x.CharacterId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }
