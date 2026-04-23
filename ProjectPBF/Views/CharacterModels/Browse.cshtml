@@ -1,5 +1,5 @@
 ﻿@model IEnumerable<ProjectPBF.Models.CharacterModel>
-
+@using ProjectPBF.Models.Enums
 @{
     ViewData["Title"] = "Przegląd postaci";
 }
@@ -34,7 +34,7 @@
 
                             <p class="card-text mb-3">
                                 <strong>Status:</strong>
-                                @if (character.IsAccepted)
+                                @if (character.Status == CharacterStatus.Approved)
                                 {
                                     <span class="badge bg-success">Zatwierdzona</span>
                                 }

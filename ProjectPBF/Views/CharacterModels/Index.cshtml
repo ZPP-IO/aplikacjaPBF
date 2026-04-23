@@ -1,5 +1,5 @@
 ﻿@model IEnumerable<ProjectPBF.Models.CharacterModel>
-
+@using ProjectPBF.Models.Enums
 @{
     ViewData["Title"] = "Moje postacie";
 }
@@ -32,7 +32,7 @@
                 @Html.DisplayNameFor(model => model.Intelligence)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IsAccepted)
+                @Html.DisplayNameFor(model => model.Status)
             </th>
             <th>
                 Właściciel
@@ -70,7 +70,7 @@
                     @Html.DisplayFor(modelItem => item.Intelligence)
                 </td>
                 <td>
-                    @if (item.IsAccepted)
+                    @Html.DisplayNameFor(model => model.Status)
                     {
                         <span class="badge bg-success">Zatwierdzona</span>
                     }
