@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authorization;
 using ProjectPBF.Data;
 using ProjectPBF.Models;
+using ProjectPBF.Models.Enums;
 
 namespace ProjectPBF.Controllers
 {
@@ -27,12 +24,20 @@ namespace ProjectPBF.Controllers
         // Moje postacie
         public async Task<IActionResult> Index()
         {
-            var userId = int.Parse(_userManager.GetUserId(User));
-            var myCharacters = _context.CharacterModels
-                .Include(c => c.User)
-                .Where(c => c.UserId == userId);
+            var userIdString = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Challenge();
+            }
 
-            return View(await myCharacters.ToListAsync());
+            var userId = int.Parse(userIdString);
+
+            var myCharacters = await _context.CharacterModels
+                .Include(c => c.User)
+                .Where(c => c.UserId == userId)
+                .ToListAsync();
+
+            return View(myCharacters);
         }
 
         // Wszystkie postacie do podglądu
@@ -77,18 +82,26 @@ namespace ProjectPBF.Controllers
         {
             var userIdString = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userIdString))
+            {
                 return Challenge();
+            }
 
             characterModel.UserId = int.Parse(userIdString);
 
-            characterModel.IsAccepted = false;
-
-            // MG/Admin mogą od razu zaakceptować postać
             var currentUser = await _userManager.GetUserAsync(User);
-            if (await _userManager.IsInRoleAsync(currentUser, "Admin") ||
+            if (currentUser == null)
+            {
+                return Challenge();
+            }
+
+            // Domyślnie postać oczekuje na akceptację
+            characterModel.Status = CharacterStatus.Pending;
+
+            // MG / Administrator mogą od razu utworzyć zaakceptowaną postać
+            if (await _userManager.IsInRoleAsync(currentUser, "Administrator") ||
                 await _userManager.IsInRoleAsync(currentUser, "GameMaster"))
             {
-                characterModel.IsAccepted = true;
+                characterModel.Status = CharacterStatus.Approved;
             }
 
             ModelState.Remove("UserId");
@@ -104,7 +117,7 @@ namespace ProjectPBF.Controllers
             return View(characterModel);
         }
 
-        [Authorize(Roles = "GameMaster,Admin")]
+        [Authorize(Roles = "GameMaster,Administrator")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -118,19 +131,21 @@ namespace ProjectPBF.Controllers
                 return NotFound();
             }
 
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", characterModel.UserId);
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Nick", characterModel.UserId);
             return View(characterModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "GameMaster,Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Strength,Agility,Intelligence,AvatarUrl,IsAccepted,UserId")] CharacterModel characterModel)
+        [Authorize(Roles = "GameMaster,Administrator")]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Strength,Agility,Intelligence,AvatarUrl,Status,UserId")] CharacterModel characterModel)
         {
             if (id != characterModel.Id)
             {
                 return NotFound();
             }
+
+            ModelState.Remove("User");
 
             if (ModelState.IsValid)
             {
@@ -145,20 +160,18 @@ namespace ProjectPBF.Controllers
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    throw;
                 }
 
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", characterModel.UserId);
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Nick", characterModel.UserId);
             return View(characterModel);
         }
 
-        [Authorize(Roles = "GameMaster,Admin")]
+        [Authorize(Roles = "GameMaster,Administrator")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -180,16 +193,16 @@ namespace ProjectPBF.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "GameMaster,Admin")]
+        [Authorize(Roles = "GameMaster,Administrator")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var characterModel = await _context.CharacterModels.FindAsync(id);
             if (characterModel != null)
             {
                 _context.CharacterModels.Remove(characterModel);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

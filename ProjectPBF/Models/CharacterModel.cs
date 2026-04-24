@@ -1,29 +1,44 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
+﻿using ProjectPBF.Models.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjectPBF.Models
 {
     public class CharacterModel
     {
-        [Key]
         public int Id { get; set; }
 
         [Required]
-        [Display(Name = "Imię Postaci")]
-        public string Name { get; set; }
-
-        [Display(Name = "Opis/Biografia")]
-        public string Description { get; set; }
-
-        public int Strength { get; set; } = 10;
-        public int Agility { get; set; } = 10;
-        public int Intelligence { get; set; } = 10;
-
-        public string? AvatarUrl { get; set; }
+        [MaxLength(60)]
+        public string Name { get; set; } = null!;
 
         [Required]
-        public bool IsAccepted { get; set; } = false;
+        [MaxLength(4000)]
+        public string Description { get; set; } = null!;
+
+        [Range(0, 100)]
+        public int Strength { get; set; }
+
+        [Range(0, 100)]
+        public int Agility { get; set; }
+
+        [Range(0, 100)]
+        public int Intelligence { get; set; }
+
+        [MaxLength(500)]
+        public string? AvatarUrl { get; set; }
+
+        public CharacterStatus Status { get; set; } = CharacterStatus.Pending;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? UpdatedAt { get; set; }
+
+        [ForeignKey(nameof(User))]
         public int UserId { get; set; }
-        public virtual UserModel User { get; set; }
+
+        public UserModel User { get; set; } = null!;
+
+        public ICollection<CampaignCharacterModel> CampaignCharacters { get; set; } = new List<CampaignCharacterModel>();
     }
 }

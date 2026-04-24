@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using ProjectPBF.Models;
-using ProjektPBF.Models;
+using ProjectPBF.Models.Enums;
 
 namespace ProjectPBF.Data
 {
@@ -11,18 +11,22 @@ namespace ProjectPBF.Data
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<UserModel>>();
 
-            string[] roles = { "Admin", "GameMaster", "Player" };
+            string[] roles = { "Administrator", "GameMaster", "Player" };
 
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {
-                    await roleManager.CreateAsync(new IdentityRole<int>(role));
+                    await roleManager.CreateAsync(new IdentityRole<int>
+                    {
+                        Name = role,
+                        NormalizedName = role.ToUpper()
+                    });
                 }
             }
 
             var adminEmail = "admin@local.test";
-            var adminPassword = "Admin123";
+            var adminPassword = "Admin123!";
 
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
@@ -34,8 +38,9 @@ namespace ProjectPBF.Data
                     Email = adminEmail,
                     EmailConfirmed = true,
                     Nick = "admin",
-                    AvatarUrl = "", 
-                    Role = UserRole.Admin
+                    AvatarUrl = "",
+                    AccountStatus = AccountStatus.Approved,
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 var result = await userManager.CreateAsync(adminUser, adminPassword);
@@ -47,9 +52,9 @@ namespace ProjectPBF.Data
                 }
             }
 
-            if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+            if (!await userManager.IsInRoleAsync(adminUser, "Administrator"))
             {
-                await userManager.AddToRoleAsync(adminUser, "Admin");
+                await userManager.AddToRoleAsync(adminUser, "Administrator");
             }
         }
     }
