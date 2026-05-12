@@ -1,0 +1,14 @@
+@model ProjectPBF.Models.ForumModel
+
+<h2>Usuñ forum</h2>
+
+<div class="alert alert-warning">
+    Czy na pewno chcesz usun¹æ forum: <strong>@Model.Name</strong>? Operacja usunie w¹tki i posty (cascade).
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <button class="btn btn-danger" type="submit">Usuñ</button>
+    <a class="btn btn-secondary" asp-controller="Forums" asp-action="Index">Anuluj</a>
+    </form>

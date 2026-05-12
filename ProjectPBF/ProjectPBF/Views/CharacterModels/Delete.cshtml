@@ -1,0 +1,68 @@
+﻿@model ProjectPBF.Models.CharacterModel
+@using ProjectPBF.Models.Enums
+
+@{
+    ViewData["Title"] = "Usuń postać";
+}
+
+<div class="container py-4">
+    <h1 class="mb-4 text-danger">Usuń postać</h1>
+
+    <div class="alert alert-warning">
+        Czy na pewno chcesz usunąć tę postać? Tej operacji nie będzie można cofnąć.
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center mb-4">
+                    @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
+                    {
+                        <img src="@Model.AvatarUrl" alt="Avatar postaci" class="img-fluid rounded shadow-sm" style="max-height: 300px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div class="border rounded p-5 bg-light text-muted">
+                            Brak avatara
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-8">
+                    <h2 class="mb-3">@Model.Name</h2>
+
+                    <p><strong>Opis:</strong> @(string.IsNullOrWhiteSpace(Model.Description) ? "Brak opisu." : Model.Description)</p>
+                    <p><strong>Siła:</strong> @Model.Strength</p>
+                    <p><strong>Zręczność:</strong> @Model.Agility</p>
+                    <p><strong>Inteligencja:</strong> @Model.Intelligence</p>
+                    <p>
+                        <strong>Status:</strong>
+                        @if (Model.Status == CharacterStatus.Approved)
+                        {
+                            <span class="badge bg-success">Zatwierdzona</span>
+                        }
+                        else if (Model.Status == CharacterStatus.Rejected)
+                        {
+                            <span class="badge bg-danger">Odrzucona</span>
+                        }
+                        else if (Model.Status == CharacterStatus.Archived)
+                        {
+                            <span class="badge bg-secondary">Zarchiwizowana</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Oczekuje</span>
+                        }
+                    </p>
+                    <p><strong>Właściciel:</strong> @(Model.User?.Nick ?? "Brak danych")</p>
+                </div>
+            </div>
+
+            <form asp-action="Delete" class="mt-4">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger me-2">Usuń</button>
+                <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
+            </form>
+        </div>
+    </div>
+</div>
