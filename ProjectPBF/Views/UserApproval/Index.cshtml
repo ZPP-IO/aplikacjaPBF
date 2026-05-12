@@ -1,0 +1,74 @@
+﻿@model IEnumerable<ProjectPBF.Models.UserModel>
+@using ProjectPBF.Models.Enums
+
+@{
+    ViewData["Title"] = "Akceptacja użytkowników";
+}
+
+<div class="container py-4">
+    <h1 class="mb-4">Użytkownicy oczekujący na akceptację</h1>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Brak użytkowników oczekujących na akceptację.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nick</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Data utworzenia</th>
+                        <th>Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>@user.Nick</td>
+                            <td>@user.Email</td>
+                            <td>
+                                @if (user.AccountStatus == AccountStatus.Pending)
+                                {
+                                    <span class="badge bg-warning text-dark">Oczekuje</span>
+                                }
+                                else if (user.AccountStatus == AccountStatus.Approved)
+                                {
+                                    <span class="badge bg-success">Zaakceptowany</span>
+                                }
+                                else if (user.AccountStatus == AccountStatus.Rejected)
+                                {
+                                    <span class="badge bg-danger">Odrzucony</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Zablokowany</span>
+                                }
+                            </td>
+                            <td>@user.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <form asp-action="Approve" method="post">
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <button type="submit" class="btn btn-success btn-sm">Akceptuj</button>
+                                    </form>
+
+                                    <form asp-action="Reject" method="post">
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <button type="submit" class="btn btn-danger btn-sm">Odrzuć</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

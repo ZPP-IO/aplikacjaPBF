@@ -1,0 +1,44 @@
+@model IEnumerable<ProjectPBF.Models.SessionModel>
+@{
+    ViewData["Title"] = "Sesje";
+    var campaign = ViewBag.Campaign as ProjectPBF.Models.CampaignModel;
+}
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Kampania</span>
+            <h1>@campaign?.Title — Sesje</h1>
+        </div>
+        <a asp-action="Create" asp-route-campaignId="@campaign?.Id" class="btn btn-gn-primary">Utwórz sesjê</a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="gn-table-wrap">
+            <table class="table gn-table">
+                <thead>
+                    <tr><th>Nazwa</th><th>MG</th><th>Start</th><th></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var s in Model)
+                {
+                    <tr>
+                        <td><strong>@s.Title</strong><div class="muted">@s.Description</div></td>
+                        <td>@s.GameMaster?.Nick</td>
+                        <td>@(s.StartAt.HasValue ? s.StartAt.Value.ToString("yyyy-MM-dd") : "-")</td>
+                        <td><a asp-action="Details" asp-route-id="@s.Id">Szczegó³y</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <span>??</span>
+            <h2>Brak sesji</h2>
+            <p>Utwórz pierwsz¹ sesjê dla tej kampanii.</p>
+        </div>
+    }
+</section>

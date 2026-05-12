@@ -1,0 +1,92 @@
+﻿@model ProjectPBF.Models.CharacterModel
+@using ProjectPBF.Models.Enums
+
+@{
+    ViewData["Title"] = "Szczegóły postaci";
+}
+
+<div class="container py-4">
+    <h1 class="mb-4">Szczegóły postaci</h1>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center mb-4">
+                    @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
+                    {
+                        <img src="@Model.AvatarUrl" alt="Avatar postaci" class="img-fluid rounded shadow-sm" style="max-height: 350px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div class="border rounded p-5 bg-light text-muted">
+                            Brak avatara
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-8">
+                    <h2 class="mb-3">@Model.Name</h2>
+
+                    <p class="mb-2">
+                        <strong>Właściciel:</strong> @(Model.User?.Nick ?? "Brak danych")
+                    </p>
+
+                    <p class="mb-3">
+                        <strong>Status:</strong>
+                        @if (Model.Status == CharacterStatus.Approved)
+                        {
+                            <span class="badge bg-success">Zatwierdzona</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Oczekuje</span>
+                        }
+                    </p>
+
+                    <div class="mb-4">
+                        <h4>Opis</h4>
+                        <p class="text-muted">
+                            @(string.IsNullOrWhiteSpace(Model.Description) ? "Brak opisu postaci." : Model.Description)
+                        </p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3 bg-light text-center">
+                                <h5>Siła</h5>
+                                <p class="mb-0 fs-4">@Model.Strength</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3 bg-light text-center">
+                                <h5>Zręczność</h5>
+                                <p class="mb-0 fs-4">@Model.Agility</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3 bg-light text-center">
+                                <h5>Inteligencja</h5>
+                                <p class="mb-0 fs-4">@Model.Intelligence</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <a asp-controller="CharacterModels" asp-action="Browse" class="btn btn-secondary me-2">
+                            Powrót do przeglądu
+                        </a>
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("GameMaster"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                                Edytuj
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

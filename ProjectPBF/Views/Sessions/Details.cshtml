@@ -1,0 +1,140 @@
+@model ProjectPBF.Models.SessionModel
+@using System.Security.Claims
+@using ProjectPBF.Models.Enums
+
+@{
+    ViewData["Title"] = "Szczegó³y sesji";
+    var userIdText = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    int.TryParse(userIdText, out var currentUserId);
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var isMemberAccepted = Model.Members.Any(m => m.UserId == currentUserId && m.Status == SessionMembershipStatus.Accepted);
+    var hasPendingRequest = Model.Members.Any(m => m.UserId == currentUserId && m.Status == SessionMembershipStatus.Pending);
+    var isSessionGM = Model.GameMasterId == currentUserId;
+    var isSessionAdmin = Model.Members.Any(m => m.UserId == currentUserId && m.IsAdmin && m.Status == SessionMembershipStatus.Accepted);
+}
+
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Sesja</span>
+            <h1>@Model.Title</h1>
+            <p class="muted">Kampania: <a asp-controller="Campaigns" asp-action="Details" asp-route-id="@Model.CampaignId">@Model.Campaign?.Title</a></p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success" role="alert">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger" role="alert">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <h3>Opis</h3>
+            <p>@Model.Description</p>
+
+            <h4>MG</h4>
+            <p>@Model.GameMaster?.Nick</p>
+
+            <h4>Start</h4>
+            <p>@(Model.StartAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")</p>
+
+            <h4>Czas trwania</h4>
+            <p>@(Model.DurationMinutes) minut</p>
+
+            <h4>Widocznoœæ</h4>
+            <p>@(Model.IsPrivate ? "Prywatna" : "Otwarta")</p>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        @if (!isAuthenticated)
+        {
+            <p>Zaloguj siê, aby z³o¿yæ proœbê o do³¹czenie.</p>
+        }
+        else if (isMemberAccepted)
+        {
+            <p class="text-success">Jesteœ uczestnikiem tej sesji.</p>
+        }
+        else if (hasPendingRequest)
+        {
+            <p class="text-warning">Masz oczekuj¹c¹ proœbê o do³¹czenie.</p>
+        }
+        else
+        {
+            <form asp-action="Join" method="post" class="d-inline">
+                <input type="hidden" name="id" value="@Model.Id" />
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-gn-primary">Poproœ o do³¹czenie</button>
+            </form>
+        }
+    </div>
+
+    <div class="mt-4">
+        <h3>Cz³onkowie</h3>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Zaakceptowani</h4>
+                @if (Model.Members.Any(m => m.Status == SessionMembershipStatus.Accepted))
+                {
+                    <ul class="clean-list">
+                        @foreach (var m in Model.Members.Where(m => m.Status == SessionMembershipStatus.Accepted))
+                        {
+                            <li><span>??</span><strong>@m.User?.Nick</strong>@(m.IsAdmin ? " <small>admin</small>" : "")</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>Brak zaakceptowanych uczestników.</p>
+                }
+            </div>
+
+            <div class="col-md-6">
+                <h4>Oczekuj¹ce proœby</h4>
+                @if (Model.Members.Any(m => m.Status == SessionMembershipStatus.Pending))
+                {
+                    <ul class="clean-list">
+                        @foreach (var m in Model.Members.Where(m => m.Status == SessionMembershipStatus.Pending))
+                        {
+                            <li class="d-flex justify-content-between align-items-center">
+                                <div><span>??</span><strong>@m.User?.Nick</strong></div>
+                                <div>
+                                    @if (isSessionGM || isSessionAdmin)
+                                    {
+                                        <form asp-action="ApproveMember" method="post" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="memberId" value="@m.Id" />
+                                            <button class="btn btn-sm btn-success">Akceptuj</button>
+                                        </form>
+                                        <form asp-action="RejectMember" method="post" style="display:inline;margin-left:.5rem;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="memberId" value="@m.Id" />
+                                            <button class="btn btn-sm btn-danger">Odrzuæ</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="muted small">Oczekiwanie na akceptacjê</span>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>Brak oczekuj¹cych próœb.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Index" asp-route-campaignId="@Model.CampaignId" class="btn btn-link">Powrót do listy sesji</a>
+    </div>
+</section>
