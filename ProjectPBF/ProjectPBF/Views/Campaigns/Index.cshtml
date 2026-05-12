@@ -1,0 +1,51 @@
+@model IEnumerable<ProjectPBF.Models.CampaignModel>
+@{ ViewData["Title"] = "Moje kampanie"; }
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Panel gracza</span>
+            <h1>Moje kampanie</h1>
+        </div>
+        <a asp-action="Create" class="btn btn-gn-primary">Utwórz nową kampanię</a>
+    </div>
+
+    @if (Model.Any()) {
+        <div class="gn-table-wrap">
+            <table class="table gn-table">
+                <thead>
+                    <tr>
+                        <th>Nazwa</th>
+                        <th>MG</th>
+                        <th>Punkty</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var campaign in Model) {
+                    <tr>
+                        <td><strong>@campaign.Title</strong></td>
+                        <td>@campaign.GameMaster?.Nick</td>
+                        <td>@campaign.StartingPoints</td>
+                        <td><span class="gn-badge">@campaign.Status</span></td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@campaign.Id">Szczegóły</a>
+                            |
+                            <a asp-controller="Sessions" asp-action="Index" asp-route-campaignId="@campaign.Id">Sesje</a>
+                            |
+                            <a asp-controller="Sessions" asp-action="Create" asp-route-campaignId="@campaign.Id">Utwórz sesję</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+    else {
+        <div class="empty-state">
+            <span>🎲</span>
+            <h2>Nie masz jeszcze żadnych kampanii</h2>
+            <p>Utwórz pierwszą kampanię i zaproś graczy.</p>
+        </div>
+    }
+</section>

@@ -1,0 +1,39 @@
+﻿@model IEnumerable<ProjectPBF.Models.UserModel>
+
+@{
+    ViewData["Title"] = "Użytkownicy";
+}
+
+<div class="container py-4">
+    <h1 class="mb-4">Użytkownicy</h1>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Brak użytkowników do wyświetlenia.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var user in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrWhiteSpace(user.AvatarUrl))
+                        {
+                            <img src="@user.AvatarUrl" class="card-img-top" alt="Avatar użytkownika" style="height: 250px; object-fit: cover;" />
+                        }
+
+                        <div class="card-body">
+                            <h5 class="card-title">@user.Nick</h5>
+                            <a asp-controller="Users" asp-action="Details" asp-route-id="@user.Id" class="btn btn-primary">
+                                Zobacz profil
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,32 @@
+@model IEnumerable<ProjectPBF.Models.ForumCategoryModel>
+
+<h2>Kategorie forum</h2>
+
+<p>
+    <a class="btn btn-primary" asp-controller="ForumCategories" asp-action="Create">Dodaj kategoriê</a>
+</p>
+
+<table class="table table-dark table-striped">
+    <thead>
+        <tr>
+            <th>Nazwa</th>
+            <th>Opis</th>
+            <th>Porz¹dek</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Name</td>
+                <td>@c.Description</td>
+                <td>@c.Order</td>
+                <td>
+                    <a class="btn btn-sm btn-secondary" asp-controller="ForumCategories" asp-action="Edit" asp-route-id="@c.Id">Edytuj</a>
+                    <a class="btn btn-sm btn-danger" asp-controller="ForumCategories" asp-action="Delete" asp-route-id="@c.Id">Usuñ</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
