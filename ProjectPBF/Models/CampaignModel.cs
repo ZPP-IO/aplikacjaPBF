@@ -9,7 +9,7 @@ namespace ProjectPBF.Models
 
         [Required]
         [MaxLength(100)]
-        [Display(Name = "Nazwa kampanii / sesji")]
+        [Display(Name = "Nazwa kampanii")]
         public string Title { get; set; } = null!;
 
         [Required]
@@ -30,5 +30,8 @@ namespace ProjectPBF.Models
         public ICollection<CampaignCharacterModel> CampaignCharacters { get; set; } = new List<CampaignCharacterModel>();
         public ICollection<CampaignMemberModel> Members { get; set; } = new List<CampaignMemberModel>();
         public ICollection<CampaignStatisticModel> Statistics { get; set; } = new List<CampaignStatisticModel>();
+
+        // Nowa kolekcja: sesje należące do kampanii
+        public ICollection<SessionModel> Sessions { get; set; } = new List<SessionModel>();
     }
 }

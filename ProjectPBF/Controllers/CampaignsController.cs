@@ -111,9 +111,28 @@ namespace ProjectPBF.Controllers
                 .Include(c => c.Members).ThenInclude(m => m.User)
                 .Include(c => c.Statistics)
                 .Include(c => c.CampaignCharacters).ThenInclude(cc => cc.Character)
+                .Include(c => c.Sessions).ThenInclude(s => s.GameMaster)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (campaign == null) return NotFound();
+
+            // Flaga: czy bie¿¹cy u¿ytkownik (zalogowany) mo¿e tworzyæ sesjê (GM lub admin kampanii)
+            var userIdText = _userManager.GetUserId(User);
+            if (!string.IsNullOrEmpty(userIdText) && int.TryParse(userIdText, out var userId))
+            {
+                var isGameMaster = campaign.GameMasterId == userId;
+                var isAdminMember = campaign.Members.Any(m => m.UserId == userId && m.IsAdmin);
+                ViewBag.CanCreateSession = isGameMaster || isAdminMember;
+            }
+            else
+            {
+                ViewBag.CanCreateSession = false;
+            }
+
+            // Przekazujemy posortowan¹ listê sesji (najnowsze pierwsze)
+            ViewBag.Sessions = campaign.Sessions
+                .OrderByDescending(s => s.CreatedAt)
+                .ToList();
 
             return View(campaign);
         }

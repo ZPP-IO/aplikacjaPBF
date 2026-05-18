@@ -1,0 +1,21 @@
+﻿@model ProjectPBF.Models.ForumCategoryModel
+<h2>Dodaj kategorię</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label class="form-label">Nazwa</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Opis</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Porządek</label>
+        <input asp-for="Order" class="form-control" type="number" />
+    </div>
+    <button class="btn btn-success" type="submit">Zapisz</button>
+    <a class="btn btn-secondary" asp-controller="ForumCategories" asp-action="Index">Anuluj</a>
+</form>

@@ -1,0 +1,35 @@
+@model ProjectPBF.Models.ForumModel
+@using ProjectPBF.Models.Enums
+
+<h2>Dodaj forum</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label class="form-label">Kategoria</label>
+        <select asp-for="CategoryId" asp-items="(SelectList)ViewBag.Categories" class="form-select"></select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Nazwa</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Opis</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Poziom dostêpu</label>
+        <select asp-for="AccessLevel" class="form-select">
+            @foreach (var v in (Array)ViewBag.AccessLevels)
+            {
+                <option value="@((int)v)">@v</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Porz¹dek</label>
+        <input asp-for="Order" class="form-control" type="number" />
+    </div>
+    <button class="btn btn-success" type="submit">Zapisz</button>
+    <a class="btn btn-secondary" asp-controller="Forums" asp-action="Index">Anuluj</a>
+</form>

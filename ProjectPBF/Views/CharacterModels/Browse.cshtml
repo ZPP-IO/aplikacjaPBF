@@ -4,53 +4,61 @@
     ViewData["Title"] = "Przegląd postaci";
 }
 
-<div class="container py-4">
-    <h1 class="mb-4">Przegląd postaci</h1>
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Mieszkańcy świata</span>
+            <h1>Przegląd postaci</h1>
+        </div>
+        <a asp-action="Create" class="btn btn-gn-primary">Stwórz postać</a>
+    </div>
+
+    <div class="campaign-grid">
+        @foreach (var character in Model)
+        {
+            <article class="campaign-card">
+                @if (!string.IsNullOrWhiteSpace(character.AvatarUrl))
+                {
+                    <div class="character-avatar-wrapper mb-3" style="height: 150px; overflow: hidden; border-radius: 8px;">
+                        <img src="@character.AvatarUrl" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+                    </div>
+                }
+                else
+                {
+                    <div class="campaign-medal">👤</div>
+                }
+
+                <h2>@character.Name</h2>
+
+                <div class="mb-3">
+                    @if (character.Status == CharacterStatus.Approved)
+                    {
+                        <span class="badge bg-success">Zatwierdzony</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Oczekujący</span>
+                    }
+                </div>
+
+                <div class="campaign-meta">
+                    <span>Gracz: @(character.User?.Nick ?? "Anonim")</span>
+                    <span>ID: #@character.Id</span>
+                </div>
+
+                <a asp-controller="CharacterModels" asp-action="Details" asp-route-id="@character.Id" class="btn btn-gn-secondary w-100">
+                    Szczegóły
+                </a>
+            </article>
+        }
+    </div>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info">
-            Brak postaci do wyświetlenia.
+        <div class="empty-state">
+            <span>Empty</span>
+            <h2>Brak postaci</h2>
+            <p>Nie znaleziono żadnych bohaterów w bazie.</p>
         </div>
     }
-    else
-    {
-        <div class="row">
-            @foreach (var character in Model)
-            {
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        @if (!string.IsNullOrWhiteSpace(character.AvatarUrl))
-                        {
-                            <img src="@character.AvatarUrl" class="card-img-top" alt="Avatar postaci" style="height: 250px; object-fit: cover;" />
-                        }
-
-                        <div class="card-body">
-                            <h5 class="card-title">@character.Name</h5>
-
-                            <p class="card-text mb-2">
-                                <strong>Właściciel:</strong> @(character.User?.Nick ?? "Brak danych")
-                            </p>
-
-                            <p class="card-text mb-3">
-                                <strong>Status:</strong>
-                                @if (character.Status == CharacterStatus.Approved)
-                                {
-                                    <span class="badge bg-success">Zatwierdzona</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-warning text-dark">Oczekuje</span>
-                                }
-                            </p>
-
-                            <a asp-controller="CharacterModels" asp-action="Details" asp-route-id="@character.Id" class="btn btn-primary">
-                                Szczegóły
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-</div>
+</section>

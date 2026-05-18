@@ -1,14 +1,14 @@
 @model ProjectPBF.ViewModels.CampaignCreateViewModel
 @{ ViewData["Title"] = "Utwórz sesję"; }
 <section class="page-panel narrow">
-    <div class="page-heading"><div><span class="eyebrow">Mistrz gry</span><h1>Utwórz sesję</h1></div></div>
+    <div class="page-heading"><div><span class="eyebrow">Mistrz gry</span><h1>Utwórz kampanię</h1></div></div>
     <form asp-action="Create" method="post" class="gn-form">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="mb-3"><label asp-for="Title" class="form-label"></label><input asp-for="Title" class="form-control" placeholder="Np. Klątwa smoczego tronu" /><span asp-validation-for="Title" class="text-danger"></span></div>
         <div class="mb-3"><label asp-for="Description" class="form-label"></label><textarea asp-for="Description" class="form-control" rows="5"></textarea><span asp-validation-for="Description" class="text-danger"></span></div>
         <div class="mb-3"><label asp-for="StartingPoints" class="form-label"></label><input asp-for="StartingPoints" class="form-control" /><span asp-validation-for="StartingPoints" class="text-danger"></span><small class="form-text">Np. 20 punktów do rozdania w tej kampanii.</small></div>
         <div class="mb-4"><label asp-for="StatisticsText" class="form-label"></label><input asp-for="StatisticsText" class="form-control" placeholder="Siła, Zręczność, Mana, Refleks" /><span asp-validation-for="StatisticsText" class="text-danger"></span><small class="form-text">Statystyki oddziel przecinkami.</small></div>
-        <div class="d-flex gap-2"><button type="submit" class="btn btn-gn-primary">Utwórz sesję</button><a asp-action="Index" class="btn btn-gn-secondary">Wróć</a></div>
+        <div class="d-flex gap-2"><button type="submit" class="btn btn-gn-primary">Utwórz kampanię</button><a asp-action="Index" class="btn btn-gn-secondary">Wróć</a></div>
     </form>
 </section>
 @section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

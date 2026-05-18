@@ -6,12 +6,12 @@ namespace ProjectPBF.ViewModels
     {
         [Required]
         [MaxLength(100)]
-        [Display(Name = "Nazwa sesji")]
+        [Display(Name = "Nazwa kampanii")]
         public string Title { get; set; } = null!;
 
         [Required]
         [MaxLength(4000)]
-        [Display(Name = "Opis sesji")]
+        [Display(Name = "Opis kampanii")]
         public string Description { get; set; } = null!;
 
         [Range(0, 999)]

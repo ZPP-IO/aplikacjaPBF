@@ -20,6 +20,18 @@ namespace ProjectPBF.Data
         public DbSet<CampaignStatisticModel> CampaignStatistics { get; set; } = null!;
         public DbSet<CharacterStatisticValueModel> CharacterStatisticValues { get; set; } = null!;
 
+        // Nowe DbSety sesji i forum
+        public DbSet<SessionModel> SessionModels { get; set; } = null!;
+        public DbSet<SessionMemberModel> SessionMembers { get; set; } = null!;
+        public DbSet<SessionThreadModel> SessionThreads { get; set; } = null!;
+        public DbSet<SessionPostModel> SessionPosts { get; set; } = null!;
+
+        public DbSet<ForumCategoryModel> ForumCategories { get; set; } = null!;
+        public DbSet<ForumModel> Forums { get; set; } = null!;
+        public DbSet<ForumThreadModel> ForumThreads { get; set; } = null!;
+        public DbSet<ForumPostModel> ForumPosts { get; set; } = null!;
+        public DbSet<ForumPostRevisionModel> ForumPostRevisions { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -138,6 +150,83 @@ namespace ProjectPBF.Data
                     .HasForeignKey(x => x.CampaignStatisticId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            builder.Entity<SessionModel>(entity =>
+            {
+                entity.Property(x => x.Title).IsRequired().HasMaxLength(150);
+                entity.Property(x => x.Description).HasMaxLength(4000);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.HasIndex(x => x.CampaignId);
+
+                entity.HasOne(x => x.Campaign)
+                      .WithMany(x => x.Sessions)
+                      .HasForeignKey(x => x.CampaignId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.GameMaster)
+                      .WithMany()
+                      .HasForeignKey(x => x.GameMasterId)
+                      .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<SessionMemberModel>(entity =>
+            {
+                entity.HasIndex(x => new { x.SessionId, x.UserId }).IsUnique();
+                entity.Property(x => x.JoinedAt).HasDefaultValueSql("NULL");
+                entity.Property(x => x.Status).HasConversion<int>().HasDefaultValue(SessionMembershipStatus.Pending);
+
+                entity.HasOne(x => x.Session)
+                      .WithMany(x => x.Members)
+                      .HasForeignKey(x => x.SessionId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.User)
+                      .WithMany()
+                      .HasForeignKey(x => x.UserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<SessionThreadModel>(entity =>
+            {
+                entity.Property(x => x.Title).IsRequired().HasMaxLength(200);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.HasIndex(x => x.SessionId);
+
+                entity.HasOne(x => x.Session)
+                      .WithMany(x => x.Threads)
+                      .HasForeignKey(x => x.SessionId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.CreatedByUser)
+                      .WithMany()
+                      .HasForeignKey(x => x.CreatedByUserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<SessionPostModel>(entity =>
+            {
+                entity.Property(x => x.Content).IsRequired().HasMaxLength(8000);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.HasIndex(x => x.ThreadId);
+
+                entity.HasOne(x => x.Thread)
+                      .WithMany(x => x.Posts)
+                      .HasForeignKey(x => x.ThreadId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.User)
+                      .WithMany()
+                      .HasForeignKey(x => x.UserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // indeksy wyszukiwania i wydajnoœci
+            builder.Entity<ForumThreadModel>().HasIndex(t => t.Title);
+            builder.Entity<ForumPostModel>().HasIndex(p => p.ThreadId);
+            builder.Entity<ForumPostModel>().HasIndex(p => p.CreatedAt);
+            builder.Entity<ForumModel>().HasIndex(f => new { f.CategoryId, f.Order });
+
+            // ograniczenia d³ugoœci i cascade rules mogê dopracowaæ wed³ug Twoich preferencji
         }
     }
 }

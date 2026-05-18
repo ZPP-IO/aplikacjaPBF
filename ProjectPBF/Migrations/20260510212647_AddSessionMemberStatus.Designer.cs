@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectPBF.Data;
 
@@ -11,9 +12,11 @@ using ProjectPBF.Data;
 namespace ProjectPBF.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510212647_AddSessionMemberStatus")]
+    partial class AddSessionMemberStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -389,186 +392,6 @@ namespace ProjectPBF.Migrations
                     b.HasIndex("CharacterId");
 
                     b.ToTable("CharacterStatisticValues");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumCategoryModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ForumCategories");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId", "Order");
-
-                    b.ToTable("Forums");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumPostModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AuthorDisplayName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("CharacterDisplayName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int?>("CharacterId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("EditedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("QuotePostId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ThreadId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("QuotePostId");
-
-                    b.HasIndex("ThreadId");
-
-                    b.ToTable("ForumPosts");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumPostRevisionModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("EditedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("EditedByUserId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("PostId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PostId");
-
-                    b.ToTable("ForumPostRevisions");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumThreadModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedByCharacterId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CreatedByUserId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ForumId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsLocked")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPinned")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ForumId");
-
-                    b.HasIndex("Title");
-
-                    b.ToTable("ForumThreads");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.SessionMemberModel", b =>
@@ -973,56 +796,6 @@ namespace ProjectPBF.Migrations
                     b.Navigation("Statistic");
                 });
 
-            modelBuilder.Entity("ProjectPBF.Models.ForumModel", b =>
-                {
-                    b.HasOne("ProjectPBF.Models.ForumCategoryModel", "Category")
-                        .WithMany("Forums")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumPostModel", b =>
-                {
-                    b.HasOne("ProjectPBF.Models.ForumPostModel", "QuotePost")
-                        .WithMany()
-                        .HasForeignKey("QuotePostId");
-
-                    b.HasOne("ProjectPBF.Models.ForumThreadModel", "Thread")
-                        .WithMany("Posts")
-                        .HasForeignKey("ThreadId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("QuotePost");
-
-                    b.Navigation("Thread");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumPostRevisionModel", b =>
-                {
-                    b.HasOne("ProjectPBF.Models.ForumPostModel", "Post")
-                        .WithMany("Revisions")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Post");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumThreadModel", b =>
-                {
-                    b.HasOne("ProjectPBF.Models.ForumModel", "Forum")
-                        .WithMany("Threads")
-                        .HasForeignKey("ForumId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Forum");
-                });
-
             modelBuilder.Entity("ProjectPBF.Models.SessionMemberModel", b =>
                 {
                     b.HasOne("ProjectPBF.Models.SessionModel", "Session")
@@ -1125,26 +898,6 @@ namespace ProjectPBF.Migrations
                     b.Navigation("CampaignCharacters");
 
                     b.Navigation("StatisticValues");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumCategoryModel", b =>
-                {
-                    b.Navigation("Forums");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumModel", b =>
-                {
-                    b.Navigation("Threads");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumPostModel", b =>
-                {
-                    b.Navigation("Revisions");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ForumThreadModel", b =>
-                {
-                    b.Navigation("Posts");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.SessionModel", b =>

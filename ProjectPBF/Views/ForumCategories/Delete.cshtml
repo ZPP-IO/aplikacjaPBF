@@ -1,0 +1,13 @@
+﻿@model ProjectPBF.Models.ForumCategoryModel
+<h2>Usuń kategorię</h2>
+
+<div class="alert alert-warning">
+    Czy na pewno chcesz usunąć kategorię: <strong>@Model.Name</strong>? Operacja usunie fora w tej kategorii (cascade).
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <button class="btn btn-danger" type="submit">Usuń</button>
+    <a class="btn btn-secondary" asp-controller="ForumCategories" asp-action="Index">Anuluj</a>
+</form>

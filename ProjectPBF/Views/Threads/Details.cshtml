@@ -1,0 +1,148 @@
+@model ProjectPBF.Models.ForumThreadModel
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = Model.Title;
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var isAdmin = User.IsInRole("Administrator") || User.IsInRole("MistrzGry");
+}
+
+<script>
+    function toggleEdit(postId) {
+        var form = document.getElementById('edit-form-' + postId);
+        var content = document.getElementById('post-content-' + postId);
+        if (!form) return;
+        if (form.style.display === 'none' || form.style.display === '') {
+            form.style.display = 'block';
+            if (content) content.style.display = 'none';
+        } else {
+            form.style.display = 'none';
+            if (content) content.style.display = 'block';
+        }
+    }
+</script>
+
+<section class="page-panel">
+    <div class="page-heading align-items-center">
+        <div class="flex-grow-1">
+            <span class="eyebrow">W¹tek</span>
+            <h1 class="mb-0">@Model.Title</h1>
+            <p class="text-muted small mb-0">Rozpoczêty: @Model.CreatedAt.ToString("g")</p>
+        </div>
+        <div class="d-flex gap-2">
+            @* Usuwanie i edycja ca³ego w¹tku *@
+            @{
+                var firstPost = Model.Posts.OrderBy(p => p.CreatedAt).FirstOrDefault();
+                if (isAdmin || (firstPost != null && firstPost.UserId == currentUserId))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-warning btn-sm">Edytuj tytu³</a>
+                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Czy na pewno chcesz usun¹æ CA£Y w¹tek wraz ze wszystkimi postami?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Usuñ w¹tek</button>
+                    </form>
+                }
+            }
+            <a asp-action="Index" asp-route-forumId="@Model.ForumId" class="btn btn-outline-secondary btn-sm">Powrót</a>
+        </div>
+    </div>
+
+    <div class="posts-list mt-4">
+        @foreach (var p in Model.Posts.OrderBy(p => p.CreatedAt))
+        {
+            <article class="post-card mb-4" style="border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); border-radius: 8px; overflow: hidden;">
+                @* Header posta: Autor i akcje *@
+                <div class="post-header p-2 px-3 d-flex justify-content-between align-items-center" style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div class="post-info small">
+                        <span class="fw-bold" style="color: #e5b869;">@p.AuthorDisplayName</span>
+                        @if (!string.IsNullOrEmpty(p.CharacterDisplayName))
+                        {
+                            <span class="text-muted mx-1">jako</span>
+                            <span class="text-info">@p.CharacterDisplayName</span>
+                        }
+                        <span class="text-muted ms-3" style="font-size: 0.85em;">@p.CreatedAt.ToString("g")</span>
+                    </div>
+
+                    <div class="post-actions">
+                        @if (isAdmin || p.UserId == currentUserId)
+                        {
+                            <button type="button" class="btn btn-link text-warning p-0 m-0 me-2" onclick="toggleEdit(@p.Id)" style="text-decoration:none; font-size:0.8em; border:none; background:none;">[ Edytuj ]</button>
+                            <form asp-action="DeletePost" asp-route-id="@p.Id" method="post" onsubmit="return confirm('Usun¹æ ten post?');" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-link text-danger p-0 m-0" style="text-decoration:none; font-size: 0.8em; border:none; background:none;">
+                                    [ Usuñ ]
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+
+                @* Treœæ posta oraz edycja inline (jeœli uprawnienia) *@
+                <div class="post-body p-3" id="post-content-@p.Id" style="min-height: 80px; line-height: 1.6; color: #d1d1d1;">
+                    @p.Content
+                </div>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    var canEditThis = isAdmin || p.UserId == currentUserId;
+                    if (canEditThis)
+                    {
+                        <form asp-action="EditPost" method="post" id="edit-form-@p.Id" style="display:none; padding:0 1rem 1rem 1rem;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@p.Id" />
+                            <div class="mb-2">
+                                <textarea name="content" class="form-control bg-dark text-white border-secondary" rows="6">@p.Content</textarea>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-sm btn-primary">Zapisz</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleEdit(@p.Id)">Anuluj</button>
+                            </div>
+                        </form>
+                    }
+                }
+            </article>
+        }
+    </div>
+
+    @* Formularz dodawania *@
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="reply-section mt-5 p-4" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+            <h3 class="h5 mb-4 text-uppercase" style="letter-spacing: 1px;">Dodaj odpowiedŸ</h3>
+            <form asp-action="AddPost" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="threadId" value="@Model.Id" />
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label small text-muted">Pisz jako postaæ</label>
+                        <select name="characterId" class="form-select bg-dark text-white border-secondary">
+                            <option value="">(U¿ytkownik: @User.Identity.Name)</option>
+                            @if (ViewBag.Characters != null)
+                            {
+                                foreach (var c in (Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.Characters)
+                                {
+                                    <option value="@c.Value">Postaæ: @c.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Treœæ wiadomoœci</label>
+                    <textarea name="content" class="form-control bg-dark text-white border-secondary" rows="6" placeholder="Wpisz treœæ swojej przygody..." required></textarea>
+                </div>
+
+                <div class="text-end">
+                    <button class="btn btn-gn-primary px-5" type="submit">Wyœlij post</button>
+                </div>
+            </form>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-dark mt-4 text-center">
+            Musisz siê zalogowaæ, aby braæ udzia³ w dyskusji.
+        </div>
+    }
+</section>
