@@ -1,0 +1,11 @@
+@model ProjectPBF.Models.CampaignModel
+@{ ViewData["Title"] = Model.Title; }
+<section class="page-panel">
+    <div class="campaign-details-hero"><div><span class="eyebrow">Kampania PBF</span><h1>@Model.Title</h1><p>@Model.Description</p></div><div class="campaign-owner"><span>MG</span><strong>@Model.GameMaster?.Nick</strong><small>@Model.Status</small><small>Pula punktów: @Model.StartingPoints</small></div></div>
+    <div class="details-grid">
+        <div class="gn-panel"><h2>Statystyki tej sesji</h2>@if (Model.Statistics.Any()) { <div class="stat-chip-grid">@foreach (var stat in Model.Statistics) { <span class="stat-chip">✦ @stat.Name <small>@stat.DefaultValue</small></span> }</div> } else { <p>Brak statystyk.</p> }</div>
+        <div class="gn-panel"><h2>Uczestnicy</h2>@if (Model.Members.Any()) { <ul class="clean-list">@foreach (var member in Model.Members) { <li><span>👤</span><strong>@member.User?.Nick</strong>@if (member.IsAdmin) { <small>admin sesji</small> }</li> }</ul> } else { <p>Brak uczestników.</p> }</div>
+        <div class="gn-panel"><h2>Postacie w sesji</h2>@if (Model.CampaignCharacters.Any()) { <ul class="clean-list">@foreach (var item in Model.CampaignCharacters) { <li><span>🛡️</span><strong>@item.Character?.Name</strong><small>@item.Status</small></li> }</ul> } else { <p>Brak postaci przypisanych do sesji.</p> }</div>
+    </div>
+    <a asp-action="Browse" class="btn btn-gn-secondary mt-3">Wróć do kampanii</a>
+</section>

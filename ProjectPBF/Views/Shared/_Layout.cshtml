@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="utf-8" />
@@ -9,65 +9,32 @@
     <link rel="stylesheet" href="~/ProjectPBF.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">System PBF</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Przełącz nawigację">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Strona główna</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="CharacterModels" asp-action="Index">Moje postacie</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="CharacterModels" asp-action="Browse">Przegląd postaci</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Użytkownicy</a>
-                        </li>
-
-                        @if (User.IsInRole("Administrator") || User.IsInRole("GameMaster"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="UserApproval" asp-action="Index">
-                                    Akceptacja użytkowników
-                                </a>
-                            </li>
-                        }
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Informacje</a>
-                        </li>
-                    </ul>
-
-                    <partial name="_LoginPartial" />
+    <div class="app-shell">
+        <header class="gn-header">
+            <nav class="navbar navbar-expand-lg gn-navbar">
+                <div class="container-fluid px-4">
+                    <a class="navbar-brand gn-brand" asp-area="" asp-controller="Home" asp-action="Index"><span class="gn-logo">◆</span><span>System PBF</span></a>
+                    <button class="navbar-toggler gn-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"><span class="navbar-toggler-icon"></span></button>
+                    <div class="collapse navbar-collapse" id="mainNavbar">
+                        <ul class="navbar-nav mx-auto gn-menu">
+                            <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Strona główna</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Campaigns" asp-action="Browse">Kampanie</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Campaigns" asp-action="Index">Moje sesje</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="CharacterModels" asp-action="Index">Moje postacie</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Users" asp-action="Index">Społeczność</a></li>
+                            @if (User.IsInRole("Administrator") || User.IsInRole("GameMaster"))
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="UserApproval" asp-action="Index">Akceptacja</a></li>
+                            }
+                        </ul>
+                        <div class="gn-actions"><partial name="_LoginPartial" /></div>
+                    </div>
                 </div>
-            </div>
-        </nav>
-    </header>
-
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+            </nav>
+        </header>
+        <main role="main" class="gn-main">@RenderBody()</main>
+        <footer class="gn-footer"><div class="container-fluid px-4"><span>&copy; 2026 - System PBF</span><span class="gn-footer-links"><a asp-controller="Home" asp-action="Privacy">Informacje</a><a asp-controller="Campaigns" asp-action="Browse">Kampanie</a><a asp-controller="CharacterModels" asp-action="Browse">Postacie</a></span></div></footer>
     </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - System PBF - <a asp-area="" asp-controller="Home" asp-action="Privacy">Informacje</a>
-        </div>
-    </footer>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

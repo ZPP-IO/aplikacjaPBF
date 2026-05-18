@@ -1,4 +1,5 @@
-﻿using ProjectPBF.Models.Enums;
+using ProjectPBF.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace ProjectPBF.Models
 {
@@ -7,15 +8,18 @@ namespace ProjectPBF.Models
         public int Id { get; set; }
 
         public int CampaignId { get; set; }
-
         public CampaignModel Campaign { get; set; } = null!;
 
         public int CharacterId { get; set; }
-
         public CharacterModel Character { get; set; } = null!;
 
-        public ParticipationStatus Status { get; set; } = ParticipationStatus.Pending;
+        [MaxLength(3000)]
+        public string? CampaignDescription { get; set; }
 
+        [MaxLength(3000)]
+        public string? Notes { get; set; }
+
+        public ParticipationStatus Status { get; set; } = ParticipationStatus.Pending;
         public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
     }
 }
