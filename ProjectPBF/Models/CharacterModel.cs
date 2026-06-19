@@ -1,4 +1,4 @@
-﻿using ProjectPBF.Models.Enums;
+using ProjectPBF.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -16,6 +16,8 @@ namespace ProjectPBF.Models
         [MaxLength(4000)]
         public string Description { get; set; } = null!;
 
+        // Zostają dla starych widoków tworzenia postaci.
+        // Docelowe statystyki zależne od kampanii są w CharacterStatisticValueModel.
         [Range(0, 100)]
         public int Strength { get; set; }
 
@@ -25,20 +27,18 @@ namespace ProjectPBF.Models
         [Range(0, 100)]
         public int Intelligence { get; set; }
 
-        [MaxLength(500)]
+        [Column(TypeName = "nvarchar(max)")]
         public string? AvatarUrl { get; set; }
 
         public CharacterStatus Status { get; set; } = CharacterStatus.Pending;
-
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
         public DateTime? UpdatedAt { get; set; }
 
         [ForeignKey(nameof(User))]
         public int UserId { get; set; }
 
         public UserModel User { get; set; } = null!;
-
         public ICollection<CampaignCharacterModel> CampaignCharacters { get; set; } = new List<CampaignCharacterModel>();
+        public ICollection<CharacterStatisticValueModel> StatisticValues { get; set; } = new List<CharacterStatisticValueModel>();
     }
 }

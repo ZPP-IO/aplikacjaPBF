@@ -1,0 +1,74 @@
+[X]     Rejestracja konta użytkownika z weryfikacją e-mail.​
+
+[X]    Logowanie i reset hasła.​
+
+[X]    Profile postaci (wiele na jednego gracza) i gracza.​ **(Do poprawki przez Kamila)**
+
+[X]    Edycja profilu postaci (opis, statystyki, avatar).​ **(Do poprawki przez Kamila)**
+
+[X]    Role użytkowników: gracz, mistrz gry (MG), administrator.​
+
+[X]    Akceptacja kont (zatwierdzanie graczy przez MG/Administratora).​
+
+[X]    Widoczność statusów (online/offline).​ **(W produkcji)**
+
+[X]    ​Narzędzia dla administratorów/MG do tworzenia kategorii i forów tematycznie odpowiadającym lokacjom świata gry.​
+
+[X]    Możliwość tworzenia wątków fabularnych i scenariuszy.​
+
+[ ]    Przeglądanie i wyszukiwanie wątków.​ **(Biorę na siebie)**
+
+[X]    Ograniczenia dostępu do niektórych działów (np. tylko dla MG).​
+
+[ ]    Możliwość archiwizacji starych wątków.​ **(Biorę na siebie)**
+
+[ ]    Wersja responsywna forum (mobile/desktop).​
+
+[X]    Historia postów i system cytowania. **(jako tako)**
+
+[ ]    System tworzenia kart postaci (statystyki, umiejętności, ekwipunek).​ **(Kamil)**
+
+[ ]    Formularz zgłaszania umiejętności/techniki postaci do zatwierdzenia przez MG.​ **(Kamil)**
+
+[ ]    Mechanika rozwoju postaci (doświadczenie, rankingi, PH/Punktów Historii).​ **(Kamil)**
+
+[ ]    Tabele/zasady rozstrzygania konfliktów (np. walki, wydarzenia fabularne)​
+
+[ ]    Możliwość zgłaszania misji/fabuł i oceniania ich przez innych graczy o rolach werdyktujących.
+
+[X]    Mechanizm prywatnych wiadomości między graczami.​ (W produkcji)
+
+[ ]    Możliwość oznaczania wątków i postów (np. spoiling, ważne informacje).​ **(Biorę na siebie)**
+
+[ ]    System zgłaszania postów do moderacji.​
+
+[ ]    Powiadomienia o odpowiedziach w wątkach i wiadomościach prywatnych.​
+
+[ ]    Log aktywności (dodawanie postów, edycje, usuwanie).​
+
+[X]    Rangi i uprawnienia różnych ról (MG, admin, gracz).
+
+[ ]    Kalendarz wydarzeń fabularnych (daty eventów, sesje grupowe).​
+
+[ ]    Mechanizm ogłaszania eventów i działań (np. wojny, misje specjalne).​
+
+[ ]    Logi światowe / wydarzenia historii świata.​
+
+[ ]    Zasady wpływu wydarzeń na mechanikę postaci.
+
+
+Dodatkowe:
+
+[ ]    Ranking postaci według doświadczenia, działań itp.​
+
+[ ]    Odznaki/osiągnięcia za udział w wydarzeniach.​
+
+[ ]    Publiczny leaderboard.​
+
+[ ]    Dokumentacja świata gry (regulaminy, fabuła, lore).​
+
+[ ]    Samouczki dla nowych graczy i FAQ.​
+
+[ ]    Mapy, tabele, materiały graficzne lub PDF.​
+
+[ ]    Sekcja pomysłów / propozycji rozgrywki.

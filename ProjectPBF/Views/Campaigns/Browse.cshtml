@@ -1,0 +1,15 @@
+@model IEnumerable<ProjectPBF.Models.CampaignModel>
+@{
+	ViewData["Title"] = "Kampanie";
+}
+<section class="page-panel">
+	<div class="page-heading"><div><span class="eyebrow">Centrum rozgrywek</span><h1>Kampanie</h1></div><a asp-action="Create" class="btn btn-gn-primary">Załóż kampanię</a></div>
+	<div class="campaign-grid">@foreach (var campaign in Model) {
+	<article class="campaign-card"><div class="campaign-medal">🎲</div><h2>@campaign.Title</h2><p>@campaign.Description</p><div class="campaign-meta"><span>MG: @campaign.GameMaster?.Nick</span><span>Punkty: @campaign.StartingPoints</span></div><a asp-action="Details" asp-route-id="@campaign.Id" class="btn btn-gn-secondary w-100">Zobacz kampanię</a></article>
+		}
+</div>
+	@if (!Model.Any())
+	{
+		<div class="empty-state"><span>📜</span><h2>Brak kampanii</h2><p>Utwórz pierwszą sesję.</p></div>
+	}
+</section>
