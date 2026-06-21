@@ -16,21 +16,21 @@
 
 [X]    Możliwość tworzenia wątków fabularnych i scenariuszy.​
 
-[ ]    Przeglądanie i wyszukiwanie wątków.​ **(Biorę na siebie)**
+[X]    Przeglądanie i wyszukiwanie wątków.​ **(Biorę na siebie)**
 
 [X]    Ograniczenia dostępu do niektórych działów (np. tylko dla MG).​
 
-[ ]    Możliwość archiwizacji starych wątków.​ **(Biorę na siebie)**
+[X]    Możliwość archiwizacji starych wątków.​ **(Biorę na siebie)**
 
-[ ]    Wersja responsywna forum (mobile/desktop).​
+[X]    Wersja responsywna forum (mobile/desktop).​
 
 [X]    Historia postów i system cytowania. **(jako tako)**
 
 [ ]    System tworzenia kart postaci (statystyki, umiejętności, ekwipunek).​ **(Kamil)**
 
-[ ]    Formularz zgłaszania umiejętności/techniki postaci do zatwierdzenia przez MG.​ **(Kamil)**
+[X]    Formularz zgłaszania umiejętności/techniki postaci do zatwierdzenia przez MG.​ **(Kamil)**
 
-[ ]    Mechanika rozwoju postaci (doświadczenie, rankingi, PH/Punktów Historii).​ **(Kamil)**
+[X]    Mechanika rozwoju postaci (doświadczenie, rankingi, PH/Punktów Historii).​ **(Kamil)**
 
 [ ]    Tabele/zasady rozstrzygania konfliktów (np. walki, wydarzenia fabularne)​
 
@@ -38,7 +38,7 @@
 
 [X]    Mechanizm prywatnych wiadomości między graczami.​ (W produkcji)
 
-[ ]    Możliwość oznaczania wątków i postów (np. spoiling, ważne informacje).​ **(Biorę na siebie)**
+[X]    Możliwość oznaczania wątków i postów (np. spoiling, ważne informacje).​ **(Biorę na siebie)**
 
 [ ]    System zgłaszania postów do moderacji.​
 
