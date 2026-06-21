@@ -33,6 +33,16 @@ namespace ProjectPBF.Models
 
         public ThreadStatus Status { get; set; } = ThreadStatus.Open;
 
+        // Archiwizacja w¹tku (punkt: archiwizacja starych w¹tków)
+        public bool IsArchived { get; set; } = false;
+
+        public DateTime? ArchivedAt { get; set; }
+
+        public string? ArchivedByUserId { get; set; }
+
+        // Oznaczenia w¹tku, np. Spoiler, Important (flags)
+        public ContentTag Tags { get; set; } = ContentTag.None;
+
         public virtual ICollection<ForumPostModel> Posts { get; set; } = new List<ForumPostModel>();
     }
 }

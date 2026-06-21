@@ -1,10 +1,11 @@
-@model ProjectPBF.Models.ForumThreadModel
+Ôªø@model ProjectPBF.Models.ForumThreadModel
 @using System.Security.Claims
+@using ProjectPBF.Models.Enums
 
 @{
     ViewData["Title"] = Model.Title;
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    var isAdmin = User.IsInRole("Administrator") || User.IsInRole("MistrzGry");
+    var isAdmin = User.IsInRole("Administrator") || User.IsInRole("GameMaster");
 }
 
 <script>
@@ -20,77 +21,161 @@
             if (content) content.style.display = 'block';
         }
     }
+    function revealSpoiler(postId) {
+        var box = document.getElementById('spoiler-' + postId);
+        if (box) box.classList.add('spoiler-revealed');
+    }
 </script>
 
 <section class="page-panel">
     <div class="page-heading align-items-center">
         <div class="flex-grow-1">
-            <span class="eyebrow">Wπtek</span>
-            <h1 class="mb-0">@Model.Title</h1>
-            <p class="text-muted small mb-0">RozpoczÍty: @Model.CreatedAt.ToString("g")</p>
+            <span class="eyebrow">WƒÖtek</span>
+            <h1 class="mb-0 thread-title-line">
+                @if (Model.IsPinned)
+                {
+                    <span title="Przyklejony">üìå</span>
+                }
+                @Model.Title
+                @if (Model.IsArchived)
+                {
+                    <span class="gn-badge tag-archived">üì¶ Archiwum</span>
+                }
+                @if (Model.Tags.HasFlag(ContentTag.Spoiler))
+                {
+                    <span class="gn-badge tag-spoiler">Spoiler</span>
+                }
+                @if (Model.Tags.HasFlag(ContentTag.Important))
+                {
+                    <span class="gn-badge tag-important">Wa≈ºne</span>
+                }
+                @if (Model.Tags.HasFlag(ContentTag.OOC))
+                {
+                    <span class="gn-badge tag-ooc">OOC</span>
+                }
+            </h1>
+            <p class="text-muted small mb-0">Rozpoczƒôty: @Model.CreatedAt.ToString("g")</p>
         </div>
-        <div class="d-flex gap-2">
-            @* Usuwanie i edycja ca≥ego wπtku *@
+        <div class="d-flex gap-2 flex-wrap thread-action-bar">
             @{
                 var firstPost = Model.Posts.OrderBy(p => p.CreatedAt).FirstOrDefault();
-                if (isAdmin || (firstPost != null && firstPost.UserId == currentUserId))
+                var canManage = isAdmin || (firstPost != null && firstPost.UserId == currentUserId);
+            }
+            @if (canManage)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-warning btn-sm">Edytuj tytu≈Ç</a>
+
+                @if (!Model.IsArchived)
                 {
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-warning btn-sm">Edytuj tytu≥</a>
-                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Czy na pewno chcesz usunπÊ CA£Y wπtek wraz ze wszystkimi postami?');">
+                    <form asp-action="Archive" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Zarchiwizowaƒá ten wƒÖtek? Nie bƒôdzie mo≈ºna dodawaƒá nowych post√≥w.');">
                         @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-outline-danger btn-sm">UsuÒ wπtek</button>
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Archiwizuj</button>
                     </form>
                 }
+                else if (isAdmin)
+                {
+                    <form asp-action="Unarchive" asp-route-id="@Model.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Przywr√≥ƒá z archiwum</button>
+                    </form>
+                }
+
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Czy na pewno chcesz usunƒÖƒá CA≈ÅY wƒÖtek wraz ze wszystkimi postami?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Usu≈Ñ wƒÖtek</button>
+                </form>
             }
-            <a asp-action="Index" asp-route-forumId="@Model.ForumId" class="btn btn-outline-secondary btn-sm">PowrÛt</a>
+            @if (isAdmin)
+            {
+                <form asp-action="TogglePin" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">@(Model.IsPinned ? "Odepnij" : "Przyklej")</button>
+                </form>
+            }
+            <a asp-action="Index" asp-route-forumId="@Model.ForumId" class="btn btn-outline-secondary btn-sm">Powr√≥t</a>
         </div>
     </div>
+
+    @if (Model.IsArchived)
+    {
+        <div class="alert alert-dark mt-3 thread-archived-banner">
+            üì¶ Ten wƒÖtek jest zarchiwizowany. Dodawanie nowych odpowiedzi jest wy≈ÇƒÖczone.
+        </div>
+    }
 
     <div class="posts-list mt-4">
         @foreach (var p in Model.Posts.OrderBy(p => p.CreatedAt))
         {
-            <article class="post-card mb-4" style="border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); border-radius: 8px; overflow: hidden;">
+            var hasSpoiler = p.Tags.HasFlag(ContentTag.Spoiler);
+            <article class="post-card mb-4">
                 @* Header posta: Autor i akcje *@
-                <div class="post-header p-2 px-3 d-flex justify-content-between align-items-center" style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div class="post-header p-2 px-3 d-flex justify-content-between align-items-center flex-wrap">
                     <div class="post-info small">
-                        <span class="fw-bold" style="color: #e5b869;">@p.AuthorDisplayName</span>
+                        <span class="fw-bold post-author-name">@p.AuthorDisplayName</span>
                         @if (!string.IsNullOrEmpty(p.CharacterDisplayName))
                         {
                             <span class="text-muted mx-1">jako</span>
                             <span class="text-info">@p.CharacterDisplayName</span>
                         }
-                        <span class="text-muted ms-3" style="font-size: 0.85em;">@p.CreatedAt.ToString("g")</span>
+                        <span class="text-muted ms-3 post-date-small">@p.CreatedAt.ToString("g")</span>
+                        <div class="post-tag-row">
+                            @if (p.Tags.HasFlag(ContentTag.Important))
+                            {
+                                <span class="gn-badge tag-important">Wa≈ºne</span>
+                            }
+                            @if (p.Tags.HasFlag(ContentTag.OOC))
+                            {
+                                <span class="gn-badge tag-ooc">OOC</span>
+                            }
+                            @if (hasSpoiler)
+                            {
+                                <span class="gn-badge tag-spoiler">Spoiler</span>
+                            }
+                        </div>
                     </div>
 
                     <div class="post-actions">
                         @if (isAdmin || p.UserId == currentUserId)
                         {
-                            <button type="button" class="btn btn-link text-warning p-0 m-0 me-2" onclick="toggleEdit(@p.Id)" style="text-decoration:none; font-size:0.8em; border:none; background:none;">[ Edytuj ]</button>
-                            <form asp-action="DeletePost" asp-route-id="@p.Id" method="post" onsubmit="return confirm('UsunπÊ ten post?');" style="display:inline;">
+                            <button type="button" class="btn btn-link text-warning p-0 m-0 me-2 post-action-link" onclick="toggleEdit(@p.Id)">[ Edytuj ]</button>
+                            <form asp-action="DeletePost" asp-route-id="@p.Id" method="post" class="d-inline" onsubmit="return confirm('UsunƒÖƒá ten post?');">
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-link text-danger p-0 m-0" style="text-decoration:none; font-size: 0.8em; border:none; background:none;">
-                                    [ UsuÒ ]
-                                </button>
+                                <button type="submit" class="btn btn-link text-danger p-0 m-0 post-action-link">[ Usu≈Ñ ]</button>
                             </form>
                         }
                     </div>
                 </div>
 
-                @* TreúÊ posta oraz edycja inline (jeúli uprawnienia) *@
-                <div class="post-body p-3" id="post-content-@p.Id" style="min-height: 80px; line-height: 1.6; color: #d1d1d1;">
-                    @p.Content
-                </div>
+                @* Tre≈õƒá posta oraz edycja inline (je≈õli uprawnienia) *@
+                @if (hasSpoiler)
+                {
+                    <div class="post-body p-3 spoiler-box" id="spoiler-@p.Id">
+                        <div class="spoiler-overlay" onclick="revealSpoiler(@p.Id)">‚ö†Ô∏è Kliknij, aby pokazaƒá tre≈õƒá ze spoilerem</div>
+                        <div class="spoiler-content" id="post-content-@p.Id">@p.Content</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="post-body p-3" id="post-content-@p.Id">
+                        @p.Content
+                    </div>
+                }
 
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     var canEditThis = isAdmin || p.UserId == currentUserId;
                     if (canEditThis)
                     {
-                        <form asp-action="EditPost" method="post" id="edit-form-@p.Id" style="display:none; padding:0 1rem 1rem 1rem;">
+                        <form asp-action="EditPost" method="post" id="edit-form-@p.Id" class="post-edit-form">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@p.Id" />
                             <div class="mb-2">
                                 <textarea name="content" class="form-control bg-dark text-white border-secondary" rows="6">@p.Content</textarea>
+                            </div>
+                            <div class="mb-2 tags-checkbox-group small">
+                                <label><input type="checkbox" name="tags" value="Spoiler" @(p.Tags.HasFlag(ContentTag.Spoiler) ? "checked" : "") /> Spoiler</label>
+                                <label><input type="checkbox" name="tags" value="Important" @(p.Tags.HasFlag(ContentTag.Important) ? "checked" : "") /> Wa≈ºne</label>
+                                <label><input type="checkbox" name="tags" value="OOC" @(p.Tags.HasFlag(ContentTag.OOC) ? "checked" : "") /> OOC</label>
                             </div>
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-sm btn-primary">Zapisz</button>
@@ -104,24 +189,28 @@
     </div>
 
     @* Formularz dodawania *@
-    @if (User.Identity?.IsAuthenticated == true)
+    @if (Model.IsArchived)
     {
-        <div class="reply-section mt-5 p-4" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
-            <h3 class="h5 mb-4 text-uppercase" style="letter-spacing: 1px;">Dodaj odpowiedü</h3>
+        @* Banner o archiwizacji ju≈º wy≈õwietlony wy≈ºej - bez formularza odpowiedzi *@
+    }
+    else if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="reply-section mt-5 p-4">
+            <h3 class="h5 mb-4 text-uppercase reply-section-title">Dodaj odpowied≈∫</h3>
             <form asp-action="AddPost" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="threadId" value="@Model.Id" />
 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label class="form-label small text-muted">Pisz jako postaÊ</label>
+                        <label class="form-label small text-muted">Pisz jako postaƒá</label>
                         <select name="characterId" class="form-select bg-dark text-white border-secondary">
-                            <option value="">(Uøytkownik: @User.Identity.Name)</option>
+                            <option value="">(U≈ºytkownik: @User.Identity.Name)</option>
                             @if (ViewBag.Characters != null)
                             {
                                 foreach (var c in (Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.Characters)
                                 {
-                                    <option value="@c.Value">PostaÊ: @c.Text</option>
+                                    <option value="@c.Value">Postaƒá: @c.Text</option>
                                 }
                             }
                         </select>
@@ -129,12 +218,18 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label small text-muted">TreúÊ wiadomoúci</label>
-                    <textarea name="content" class="form-control bg-dark text-white border-secondary" rows="6" placeholder="Wpisz treúÊ swojej przygody..." required></textarea>
+                    <label class="form-label small text-muted">Tre≈õƒá wiadomo≈õci</label>
+                    <textarea name="content" class="form-control bg-dark text-white border-secondary" rows="6" placeholder="Wpisz tre≈õƒá swojej przygody..." required></textarea>
+                </div>
+
+                <div class="mb-3 tags-checkbox-group small">
+                    <label><input type="checkbox" name="tags" value="Spoiler" /> Spoiler</label>
+                    <label><input type="checkbox" name="tags" value="Important" /> Wa≈ºne</label>
+                    <label><input type="checkbox" name="tags" value="OOC" /> OOC</label>
                 </div>
 
                 <div class="text-end">
-                    <button class="btn btn-gn-primary px-5" type="submit">Wyúlij post</button>
+                    <button class="btn btn-gn-primary px-5" type="submit">Wy≈õlij post</button>
                 </div>
             </form>
         </div>
@@ -142,7 +237,7 @@
     else
     {
         <div class="alert alert-dark mt-4 text-center">
-            Musisz siÍ zalogowaÊ, aby braÊ udzia≥ w dyskusji.
+            Musisz siƒô zalogowaƒá, aby braƒá udzia≈Ç w dyskusji.
         </div>
     }
 </section>

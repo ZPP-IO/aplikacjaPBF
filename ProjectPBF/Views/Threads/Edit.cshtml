@@ -24,6 +24,12 @@
                     <p class="text-muted small mt-2">Pamiętaj o zachowaniu czytelności i ewentualnych tagach sesji (np. [MG], [Prywatne]).</p>
                 </div>
 
+                <div class="mb-4 tags-checkbox-group small">
+                    <label><input type="checkbox" name="tags" value="Spoiler" @(Model.Tags.HasFlag(ProjectPBF.Models.Enums.ContentTag.Spoiler) ? "checked" : "") /> Spoiler</label>
+                    <label><input type="checkbox" name="tags" value="Important" @(Model.Tags.HasFlag(ProjectPBF.Models.Enums.ContentTag.Important) ? "checked" : "") /> Ważne</label>
+                    <label><input type="checkbox" name="tags" value="OOC" @(Model.Tags.HasFlag(ProjectPBF.Models.Enums.ContentTag.OOC) ? "checked" : "") /> OOC</label>
+                </div>
+
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-gn-primary px-4">Zaktualizuj tytuł</button>
                     <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Wróć do wątku</a>
@@ -34,5 +40,7 @@
 </section>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

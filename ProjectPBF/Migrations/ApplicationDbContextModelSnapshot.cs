@@ -483,6 +483,9 @@ namespace ProjectPBF.Migrations
                     b.Property<int?>("QuotePostId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Tags")
+                        .HasColumnType("int");
+
                     b.Property<int>("ThreadId")
                         .HasColumnType("int");
 
@@ -536,6 +539,12 @@ namespace ProjectPBF.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ArchivedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ArchivedByUserId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -548,6 +557,9 @@ namespace ProjectPBF.Migrations
                     b.Property<int>("ForumId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsLocked")
                         .HasColumnType("bit");
 
@@ -555,6 +567,9 @@ namespace ProjectPBF.Migrations
                         .HasColumnType("bit");
 
                     b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Tags")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -565,6 +580,8 @@ namespace ProjectPBF.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ForumId");
+
+                    b.HasIndex("IsArchived");
 
                     b.HasIndex("Title");
 

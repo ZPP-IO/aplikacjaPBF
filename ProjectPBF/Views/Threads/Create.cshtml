@@ -1,22 +1,37 @@
 @model ProjectPBF.Models.ForumThreadModel
 
 @{
+    ViewData["Title"] = "Nowy w¹tek";
     var forumId = ViewBag.ForumId as int? ?? Model.ForumId;
 }
 
-<h2>Nowy w¹tek</h2>
+<section class="page-panel narrow">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Forum</span>
+            <h1>Nowy w¹tek</h1>
+        </div>
+    </div>
 
-<form asp-action="Create" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="ForumId" />
-    <div class="mb-3">
-        <label class="form-label">Tytu³</label>
-        <input asp-for="Title" class="form-control" />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Treœæ pierwszego posta</label>
-        <textarea name="initialContent" class="form-control"></textarea>
-    </div>
-    <button class="btn btn-success" type="submit">Stwórz</button>
-    <a class="btn btn-secondary" asp-action="Index" asp-route-forumId="@forumId">Anuluj</a>
-</form>
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ForumId" />
+        <div class="mb-3">
+            <label class="form-label">Tytu³</label>
+            <input asp-for="Title" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Treœæ pierwszego posta</label>
+            <textarea name="initialContent" class="form-control" rows="8"></textarea>
+        </div>
+        <div class="mb-3 tags-checkbox-group small">
+            <label><input type="checkbox" name="tags" value="Spoiler" /> Spoiler</label>
+            <label><input type="checkbox" name="tags" value="Important" /> Wa¿ne</label>
+            <label><input type="checkbox" name="tags" value="OOC" /> OOC</label>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-gn-primary" type="submit">Stwórz</button>
+            <a class="btn btn-outline-secondary" asp-action="Index" asp-route-forumId="@forumId">Anuluj</a>
+        </div>
+    </form>
+</section>

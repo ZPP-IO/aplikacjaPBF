@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectPBF.Data;
 using ProjectPBF.Models;
+using ProjectPBF.Models.Enums;
 
 namespace ProjectPBF.Controllers
 {
@@ -15,13 +16,81 @@ namespace ProjectPBF.Controllers
         private readonly ApplicationDbContext _db;
         public ThreadsController(ApplicationDbContext db) => _db = db;
 
-        public async Task<IActionResult> Index(int forumId)
+        // Pomocnicze: sk³ada pojedyncze nazwy flag (z checkboxów <input name="tags" value="Spoiler">)
+        // w jedn¹ wartoœæ enuma ContentTag (Flags).
+        private static ContentTag ParseTags(string[]? tags)
+        {
+            var result = ContentTag.None;
+            if (tags == null) return result;
+            foreach (var t in tags)
+            {
+                if (Enum.TryParse<ContentTag>(t, true, out var parsed))
+                {
+                    result |= parsed;
+                }
+            }
+            return result;
+        }
+
+        // Lista watkow w danym forum + wyszukiwanie + filtr archiwum
+        // q            - szukana fraza (tytul watku lub tresc pierwszego/jakiegokolwiek posta)
+        // showArchived - czy pokazywac zarchiwizowane watki (domyslnie nie)
+        public async Task<IActionResult> Index(int forumId, string? q, bool showArchived = false)
         {
             var forum = await _db.Forums.Include(f => f.Category).FirstOrDefaultAsync(f => f.Id == forumId);
             if (forum == null) return NotFound();
             ViewBag.Forum = forum;
-            var threads = await _db.ForumThreads.Where(t => t.ForumId == forumId).OrderByDescending(t => t.CreatedAt).ToListAsync();
+            ViewBag.Query = q;
+            ViewBag.ShowArchived = showArchived;
+
+            var query = _db.ForumThreads
+                .Include(t => t.Posts)
+                .Where(t => t.ForumId == forumId);
+
+            if (!showArchived)
+            {
+                query = query.Where(t => !t.IsArchived);
+            }
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var term = q.Trim();
+                query = query.Where(t =>
+                    t.Title.Contains(term) ||
+                    t.Posts.Any(p => !p.IsDeleted && p.Content.Contains(term)));
+            }
+
+            var threads = await query
+                .OrderByDescending(t => t.IsPinned)
+                .ThenByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
             return View(threads);
+        }
+
+        // Globalne wyszukiwanie watkow po calym forum (wszystkie kategorie)
+        public async Task<IActionResult> Search(string? q)
+        {
+            ViewBag.Query = q;
+
+            if (string.IsNullOrWhiteSpace(q))
+            {
+                return View(new System.Collections.Generic.List<ForumThreadModel>());
+            }
+
+            var term = q.Trim();
+
+            var results = await _db.ForumThreads
+                .Include(t => t.Forum).ThenInclude(f => f!.Category)
+                .Include(t => t.Posts)
+                .Where(t => !t.IsArchived && (
+                    t.Title.Contains(term) ||
+                    t.Posts.Any(p => !p.IsDeleted && p.Content.Contains(term))))
+                .OrderByDescending(t => t.CreatedAt)
+                .Take(50)
+                .ToListAsync();
+
+            return View(results);
         }
 
         [Authorize]
@@ -34,11 +103,12 @@ namespace ProjectPBF.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ForumThreadModel model, string initialContent)
+        public async Task<IActionResult> Create(ForumThreadModel model, string initialContent, string[]? tags = null)
         {
             if (!ModelState.IsValid) return View(model);
 
             model.CreatedAt = DateTime.UtcNow;
+            model.Tags = ParseTags(tags);
             _db.ForumThreads.Add(model);
             await _db.SaveChangesAsync();
 
@@ -69,7 +139,7 @@ namespace ProjectPBF.Controllers
             if (thread == null) return NotFound();
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isAdmin = User.IsInRole("Administrator") || User.IsInRole("MistrzGry");
+            var isAdmin = User.IsInRole("Administrator") || User.IsInRole("GameMaster");
 
             var firstPost = thread.Posts.OrderBy(p => p.CreatedAt).FirstOrDefault();
             var isAuthor = firstPost != null && firstPost.UserId == currentUserId;
@@ -83,6 +153,49 @@ namespace ProjectPBF.Controllers
             }
 
             return Forbid();
+        }
+
+        // Archiwizacja w¹tku (tylko Admin/GM lub autor)
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Archive(int id)
+        {
+            var thread = await _db.ForumThreads
+                .Include(t => t.Posts)
+                .FirstOrDefaultAsync(t => t.Id == id);
+            if (thread == null) return NotFound();
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole("Administrator") || User.IsInRole("GameMaster");
+            var firstPost = thread.Posts.OrderBy(p => p.CreatedAt).FirstOrDefault();
+            var isAuthor = firstPost != null && firstPost.UserId == currentUserId;
+
+            if (!isAdmin && !isAuthor) return Forbid();
+
+            thread.IsArchived = true;
+            thread.ArchivedAt = DateTime.UtcNow;
+            thread.ArchivedByUserId = currentUserId;
+            await _db.SaveChangesAsync();
+
+            return RedirectToAction("Details", new { id = thread.Id });
+        }
+
+        // Przywrócenie w¹tku z archiwum (tylko Admin/GM)
+        [HttpPost]
+        [Authorize(Roles = "Administrator,GameMaster")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Unarchive(int id)
+        {
+            var thread = await _db.ForumThreads.FindAsync(id);
+            if (thread == null) return NotFound();
+
+            thread.IsArchived = false;
+            thread.ArchivedAt = null;
+            thread.ArchivedByUserId = null;
+            await _db.SaveChangesAsync();
+
+            return RedirectToAction("Details", new { id = thread.Id });
         }
 
         public async Task<IActionResult> Details(int id)
@@ -107,9 +220,14 @@ namespace ProjectPBF.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> AddPost(int threadId, string content, int? characterId)
+        public async Task<IActionResult> AddPost(int threadId, string content, int? characterId, string[]? tags = null)
         {
             if (string.IsNullOrWhiteSpace(content)) return BadRequest("Brak treœci");
+
+            var thread = await _db.ForumThreads.FindAsync(threadId);
+            if (thread == null) return NotFound();
+            if (thread.IsArchived) return BadRequest("W¹tek jest zarchiwizowany - nie mo¿na dodawaæ nowych postów.");
+
             var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var authorNick = (await _db.Users.FindAsync(int.Parse(uid)))?.Nick ?? User.Identity?.Name ?? "Anonim";
             var post = new ForumPostModel
@@ -120,6 +238,7 @@ namespace ProjectPBF.Controllers
                 AuthorDisplayName = authorNick,
                 CharacterDisplayName = null,
                 Content = content,
+                Tags = ParseTags(tags),
                 CreatedAt = DateTime.UtcNow
             };
             if (characterId.HasValue)
@@ -132,7 +251,7 @@ namespace ProjectPBF.Controllers
             return RedirectToAction("Details", new { id = threadId });
         }
 
-        // EDYCJA W¥TKU (Tytu³)
+        // EDYCJA W¥TKU (Tytu³ + tagi)
         [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
@@ -142,7 +261,7 @@ namespace ProjectPBF.Controllers
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var firstPost = thread.Posts.OrderBy(p => p.CreatedAt).FirstOrDefault();
 
-            if (User.IsInRole("Administrator") || User.IsInRole("MistrzGry") || firstPost?.UserId == currentUserId)
+            if (User.IsInRole("Administrator") || User.IsInRole("GameMaster") || firstPost?.UserId == currentUserId)
             {
                 return View(thread);
             }
@@ -152,7 +271,7 @@ namespace ProjectPBF.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, string title)
+        public async Task<IActionResult> Edit(int id, string title, string[]? tags = null)
         {
             var thread = await _db.ForumThreads.Include(t => t.Posts).FirstOrDefaultAsync(t => t.Id == id);
             if (thread == null) return NotFound();
@@ -160,13 +279,28 @@ namespace ProjectPBF.Controllers
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var firstPost = thread.Posts.OrderBy(p => p.CreatedAt).FirstOrDefault();
 
-            if (User.IsInRole("Administrator") || User.IsInRole("MistrzGry") || firstPost?.UserId == currentUserId)
+            if (User.IsInRole("Administrator") || User.IsInRole("GameMaster") || firstPost?.UserId == currentUserId)
             {
                 thread.Title = title;
+                thread.Tags = ParseTags(tags);
                 await _db.SaveChangesAsync();
                 return RedirectToAction("Details", new { id = thread.Id });
             }
             return Forbid();
+        }
+
+        // Prze³¹czanie pinezki (przyklejony w¹tek) - tylko Admin/GM
+        [HttpPost]
+        [Authorize(Roles = "Administrator,GameMaster")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TogglePin(int id)
+        {
+            var thread = await _db.ForumThreads.FindAsync(id);
+            if (thread == null) return NotFound();
+
+            thread.IsPinned = !thread.IsPinned;
+            await _db.SaveChangesAsync();
+            return RedirectToAction("Details", new { id = thread.Id });
         }
 
         [Authorize]
@@ -175,7 +309,7 @@ namespace ProjectPBF.Controllers
             var post = await _db.ForumPosts.FindAsync(id);
             if (post == null) return NotFound();
 
-            if (User.IsInRole("Administrator") || User.IsInRole("MistrzGry") || post.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+            if (User.IsInRole("Administrator") || User.IsInRole("GameMaster") || post.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
                 return View(post);
             }
@@ -185,14 +319,16 @@ namespace ProjectPBF.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditPost(int id, string content)
+        public async Task<IActionResult> EditPost(int id, string content, string[]? tags = null)
         {
             var post = await _db.ForumPosts.FindAsync(id);
             if (post == null) return NotFound();
 
-            if (User.IsInRole("Administrator") || User.IsInRole("MistrzGry") || post.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+            if (User.IsInRole("Administrator") || User.IsInRole("GameMaster") || post.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
                 post.Content = content;
+                post.Tags = ParseTags(tags);
+                post.EditedAt = DateTime.UtcNow;
                 await _db.SaveChangesAsync();
                 return RedirectToAction("Details", new { id = post.ThreadId });
             }
@@ -208,7 +344,7 @@ namespace ProjectPBF.Controllers
             if (post == null) return NotFound();
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isAdmin = User.IsInRole("Administrator") || User.IsInRole("MistrzGry");
+            var isAdmin = User.IsInRole("Administrator") || User.IsInRole("GameMaster");
 
             var isAuthor = post.UserId == currentUserId;
 

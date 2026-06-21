@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ProjectPBF.Models.Enums;
 
 namespace ProjectPBF.Models
 {
@@ -18,7 +19,7 @@ namespace ProjectPBF.Models
         // Zawsze przechowujemy autora konta (UserId)
         public string? UserId { get; set; }
 
-        // Opcjonalnie — jeœli post jest pisany w imieniu postaci
+        // Opcjonalnie - jeœli post jest pisany w imieniu postaci
         public int? CharacterId { get; set; }
 
         // Snapshot nazw, by zachowaæ wyœwietlane imiê nawet po zmianie profilu
@@ -29,7 +30,7 @@ namespace ProjectPBF.Models
         public string? CharacterDisplayName { get; set; }
 
         [Required]
-        public string Content { get; set; } = null!; // Markdown/BBCode/HTML — wybór frontendowy
+        public string Content { get; set; } = null!; // Markdown/BBCode/HTML - wybór frontendowy
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -37,7 +38,10 @@ namespace ProjectPBF.Models
 
         public bool IsDeleted { get; set; } = false;
 
-        // Cytowanie prost¹ relacj¹ do innego posta
+        // Oznaczenia posta, np. Spoiler, Important (flags)
+        public ContentTag Tags { get; set; } = ContentTag.None;
+
+        // Cytowanie prostej relacji do innego posta
         public int? QuotePostId { get; set; }
 
         [ForeignKey(nameof(QuotePostId))]

@@ -222,6 +222,7 @@ namespace ProjectPBF.Data
 
             // indeksy wyszukiwania i wydajnoœci
             builder.Entity<ForumThreadModel>().HasIndex(t => t.Title);
+            builder.Entity<ForumThreadModel>().HasIndex(t => t.IsArchived);
             builder.Entity<ForumPostModel>().HasIndex(p => p.ThreadId);
             builder.Entity<ForumPostModel>().HasIndex(p => p.CreatedAt);
             builder.Entity<ForumModel>().HasIndex(f => new { f.CategoryId, f.Order });
