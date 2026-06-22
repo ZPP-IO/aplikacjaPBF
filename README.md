@@ -22,13 +22,13 @@
    - [X]    Wersja responsywna forum (mobile/desktop).​ **[Patryk]**
    - [X]    Historia postów i system cytowania. **[Kacper]**
    - [ ]    System tworzenia kart postaci (statystyki, umiejętności, ekwipunek).​ **[Kamil]**
-   - [ ]    Formularz zgłaszania umiejętności/techniki postaci do zatwierdzenia przez MG.​ **[Kamil]**
-   - [ ]    Mechanika rozwoju postaci (doświadczenie, rankingi, PH/Punktów Historii).​ **[Kamil]**
+   - [X]    Formularz zgłaszania umiejętności/techniki postaci do zatwierdzenia przez MG.​ **[Patryk]**
+   - [X]    Mechanika rozwoju postaci (doświadczenie, rankingi, PH/Punktów Historii).​ **[Patryk]**
    - [ ]    Tabele/zasady rozstrzygania konfliktów (np. walki, wydarzenia fabularne)​
    - [ ]    Możliwość zgłaszania misji/fabuł i oceniania ich przez innych graczy o rolach werdyktujących.
    - [X]    Mechanizm prywatnych wiadomości między graczami.​ **[Kacper]**
    - [X]    Możliwość oznaczania wątków i postów (np. spoiling, ważne informacje).​ **[Patryk]**
-   - [ ]    System zgłaszania postów do moderacji.​
+   - [ ]    System zgłaszania postów do moderacji. **[Kacper]**
    - [ ]    Powiadomienia o odpowiedziach w wątkach i wiadomościach prywatnych.​
    - [ ]    Log aktywności (dodawanie postów, edycje, usuwanie).​
    - [X]    Rangi i uprawnienia różnych ról (MG, admin, gracz).
