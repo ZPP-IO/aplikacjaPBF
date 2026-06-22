@@ -21,7 +21,7 @@
    - [X]    Możliwość archiwizacji starych wątków.​ **[Patryk]**
    - [X]    Wersja responsywna forum (mobile/desktop).​ **[Patryk]**
    - [X]    Historia postów i system cytowania. **[Kacper]**
-   - [ ]    System tworzenia kart postaci (statystyki, umiejętności, ekwipunek).​ **[Kamil]**
+   - [[50/50 pracuję ntad tym]    System tworzenia kart postaci (statystyki, umiejętności, ekwipunek).​ **[Kamil]**
    - [X]    Formularz zgłaszania umiejętności/techniki postaci do zatwierdzenia przez MG.​ **[Patryk]**
    - [X]    Mechanika rozwoju postaci (doświadczenie, rankingi, PH/Punktów Historii).​ **[Patryk]**
    - [ ]    Tabele/zasady rozstrzygania konfliktów (np. walki, wydarzenia fabularne)​
