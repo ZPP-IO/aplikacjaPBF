@@ -1,66 +1,74 @@
-﻿@model ProjectPBF.Models.CharacterModel
-
+@model ProjectPBF.ViewModels.CharacterCampaignChoiceViewModel
 @{
-    ViewData["Title"] = "Stwórz postać";
+    ViewData["Title"] = "Wybierz kampanię";
 }
 
-<div class="container py-4">
-    <h1 class="mb-4">Stwórz nową postać</h1>
-
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                <div class="mb-3">
-                    <label asp-for="Name" class="form-label">Nazwa postaci</label>
-                    <input asp-for="Name" class="form-control" />
-                    <span asp-validation-for="Name" class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="Description" class="form-label">Opis</label>
-                    <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-                    <span asp-validation-for="Description" class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="AvatarUrl" class="form-label">Link do avatara</label>
-                    <input asp-for="AvatarUrl" class="form-control" />
-                    <span asp-validation-for="AvatarUrl" class="text-danger"></span>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Strength" class="form-label">Siła</label>
-                        <input asp-for="Strength" class="form-control" />
-                        <span asp-validation-for="Strength" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Agility" class="form-label">Zręczność</label>
-                        <input asp-for="Agility" class="form-control" />
-                        <span asp-validation-for="Agility" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Intelligence" class="form-label">Inteligencja</label>
-                        <input asp-for="Intelligence" class="form-control" />
-                        <span asp-validation-for="Intelligence" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-success me-2">Zapisz postać</button>
-                    <a asp-action="Index" class="btn btn-secondary">Powrót</a>
-                </div>
-            </form>
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Nowa postać</span>
+            <h1>Wybierz kampanię</h1>
+            <p class="text-muted">Najpierw wybierasz kampanię, bo każda kampania może mieć własny schemat statystyk.</p>
         </div>
+        <a asp-controller="Campaigns" asp-action="Browse" class="btn btn-gn-secondary">Przeglądaj kampanie</a>
     </div>
-</div>
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-warning">@TempData["Error"]</div>
     }
-}
+
+    @if (!Model.Campaigns.Any())
+    {
+        <div class="empty-state">
+            <span>📜</span>
+            <h2>Brak aktywnych kampanii</h2>
+            <p>Nie ma jeszcze kampanii, do której można stworzyć postać.</p>
+        </div>
+    }
+    else
+    {
+        <div class="campaign-grid">
+            @foreach (var campaign in Model.Campaigns)
+            {
+                <article class="campaign-card">
+                    <div class="campaign-medal">🎲</div>
+                    <h2>@campaign.Title</h2>
+                    <p>@campaign.Description</p>
+
+                    <div class="campaign-meta mb-2">
+                        <span>MG: @campaign.GameMasterName</span>
+                        <span>Start: @campaign.StartingPoints PK</span>
+                        <span>Awans: +@campaign.StatisticPointsPerLevel PK/poziom</span>
+                    </div>
+
+                    <p class="text-muted"><strong>Statystyki:</strong> @campaign.StatisticsSummary</p>
+
+                    @if (campaign.IsMember)
+                    {
+                        <a asp-controller="CharacterModels"
+                           asp-action="CreateForCampaign"
+                           asp-route-campaignId="@campaign.CampaignId"
+                           class="btn btn-gn-primary w-100">
+                            Stwórz postać w tej kampanii
+                        </a>
+
+                        @if (campaign.HasCharacterInCampaign)
+                        {
+                            <small class="d-block text-muted mt-2">Masz już postać w tej kampanii, ale możesz stworzyć kolejną, jeśli MG na to pozwala.</small>
+                        }
+                    }
+                    else
+                    {
+                        <form asp-controller="Campaigns" asp-action="Join" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@campaign.CampaignId" />
+                            <input type="hidden" name="createCharacter" value="true" />
+                            <button type="submit" class="btn btn-gn-secondary w-100">Dołącz i twórz postać</button>
+                        </form>
+                    }
+                </article>
+            }
+        </div>
+    }
+</section>

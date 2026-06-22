@@ -1,0 +1,73 @@
+@model IEnumerable<ProjectPBF.Models.CharacterModel>
+@using ProjectPBF.Models
+@{
+    ViewData["Title"] = "Ranking postaci";
+    var place = 1;
+    var campaigns = ViewBag.Campaigns as List<CampaignModel> ?? new List<CampaignModel>();
+    int? selectedCampaignId = ViewBag.SelectedCampaignId as int?;
+}
+
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Hala sławy</span>
+            <h1>Ranking postaci</h1>
+            <p>Ranking według EXP, PH i poziomu. Możesz filtrować globalnie albo po kampanii.</p>
+        </div>
+    </div>
+
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-8">
+            <select name="campaignId" class="form-control">
+                <option value="">Ranking globalny</option>
+                @foreach (var campaign in campaigns)
+                {
+                    <option value="@campaign.Id" selected="@(selectedCampaignId == campaign.Id ? "selected" : null)">@campaign.Title</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-gn-primary w-100">Pokaż ranking</button>
+        </div>
+    </form>
+
+    <table class="table table-dark table-hover align-middle">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Postać</th>
+                <th>Gracz</th>
+                <th>Kampania</th>
+                <th>Ranga</th>
+                <th>Poziom</th>
+                <th>EXP</th>
+                <th>PH</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                var rankName = item.Experience switch
+                {
+                    >= 1000 => "Legenda",
+                    >= 700 => "Mistrz",
+                    >= 400 => "Weteran",
+                    >= 200 => "Doświadczony",
+                    >= 100 => "Adept",
+                    _ => "Nowicjusz"
+                };
+                <tr>
+                    <td>@place</td>
+                    <td><a asp-controller="CharacterModels" asp-action="Details" asp-route-id="@item.Id">@item.Name</a></td>
+                    <td>@(item.User?.Nick ?? "Nieznany")</td>
+                    <td>@string.Join(", ", item.CampaignCharacters.Select(cc => cc.Campaign?.Title).Where(t => !string.IsNullOrWhiteSpace(t)))</td>
+                    <td>@rankName</td>
+                    <td>@item.Level</td>
+                    <td>@item.Experience</td>
+                    <td>@item.HistoryPoints</td>
+                </tr>
+                place++;
+            }
+        </tbody>
+    </table>
+</section>

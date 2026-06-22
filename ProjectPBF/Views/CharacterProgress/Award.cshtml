@@ -1,0 +1,66 @@
+@model ProjectPBF.Models.CharacterModel
+@{
+    ViewData["Title"] = "Przyznaj EXP / PH / PK";
+    var statisticPointsPerLevel = (int)(ViewBag.StatisticPointsPerLevel ?? 0);
+    var campaignTitle = (string)(ViewBag.CampaignTitle ?? "Brak kampanii");
+}
+
+<section class="page-panel narrow">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Panel MG / właściciela kampanii</span>
+            <h1>Przyznaj rozwój postaci</h1>
+            <p>Postać: <strong>@Model.Name</strong></p>
+        </div>
+    </div>
+
+    <div class="gn-panel mb-3">
+        <p><strong>Kampania:</strong> @campaignTitle</p>
+        <p><strong>Aktualny poziom:</strong> @Model.Level</p>
+        <p><strong>EXP:</strong> @Model.Experience</p>
+        <p><strong>PH:</strong> @Model.HistoryPoints</p>
+        <p><strong>Wolne PK statystyk:</strong> @Model.AvailableStatisticPoints</p>
+        <p><strong>Przyrost PK za poziom:</strong> +@statisticPointsPerLevel</p>
+        <small class="text-muted">Poziom liczy się co 100 EXP. Jeśli postać awansuje, system automatycznie dopisze PK z kampanii.</small>
+    </div>
+
+    <form asp-action="Award" method="post" class="gn-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="characterId" value="@Model.Id" />
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label class="form-label">Zmiana EXP</label>
+            <input name="expChange" class="form-control" type="number" value="0" />
+            <small class="form-text">Może być liczba dodatnia albo ujemna. Awans automatycznie doda PK za poziom.</small>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Zmiana PH</label>
+            <input name="phChange" class="form-control" type="number" value="0" />
+            <small class="form-text">PH = Punkty Historii / Punkty fabularne.</small>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Ręczna zmiana wolnych PK statystyk</label>
+            <input name="statPointsChange" class="form-control" type="number" value="0" />
+            <small class="form-text">Tu MG może dodać albo odjąć PK w trakcie rozgrywki, np. +2 za event albo -1 za korektę błędu.</small>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Powód</label>
+            <input name="reason" class="form-control" placeholder="np. udział w sesji, dobra akcja RP, korekta błędu" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Źródło</label>
+            <input name="source" class="form-control" placeholder="np. sesja, event, admin" />
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-gn-primary">Zapisz</button>
+            <a asp-controller="CharacterModels" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-gn-secondary">Wróć</a>
+        </div>
+    </form>
+</section>

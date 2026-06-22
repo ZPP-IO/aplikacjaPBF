@@ -1,11 +1,138 @@
 @model ProjectPBF.Models.CampaignModel
-@{ ViewData["Title"] = Model.Title; }
+@{
+    ViewData["Title"] = Model.Title;
+    var canCreateCharacter = ViewBag.CanCreateCharacter == true;
+    var isCampaignMember = ViewBag.IsCampaignMember == true;
+    var canManageCampaign = ViewBag.CanManageCampaign == true;
+}
 <section class="page-panel">
-    <div class="campaign-details-hero"><div><span class="eyebrow">Kampania</span><h1>@Model.Title</h1><p>@Model.Description</p></div><div class="campaign-owner"><span>MG</span><strong>@Model.GameMaster?.Nick</strong><small>@Model.Status</small><small>Pula punktów: @Model.StartingPoints</small></div></div>
+    <div class="campaign-details-hero">
+        <div>
+            <span class="eyebrow">Kampania</span>
+            <h1>@Model.Title</h1>
+            <p>@Model.Description</p>
+
+            @if (!(User.Identity?.IsAuthenticated ?? false))
+            {
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-gn-primary">Zaloguj się, żeby dołączyć</a>
+            }
+            else if (!isCampaignMember)
+            {
+                <form asp-action="Join" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-gn-primary">Dołącz do kampanii</button>
+                </form>
+            }
+            else
+            {
+                <span class="badge bg-success">Jesteś w tej kampanii</span>
+            }
+        </div>
+        <div class="campaign-owner">
+            <span>MG</span>
+            <strong>@Model.GameMaster?.Nick</strong>
+            <small>@Model.Status</small>
+            <small>Startowa pula: @Model.StartingPoints PK</small>
+            <small>Awans: +@Model.StatisticPointsPerLevel PK / poziom</small>
+        </div>
+    </div>
+
     <div class="details-grid">
-        <div class="gn-panel"><h2>Statystyki</h2>@if (Model.Statistics.Any()) { <div class="stat-chip-grid">@foreach (var stat in Model.Statistics) { <span class="stat-chip">✦ @stat.Name <small>@stat.DefaultValue</small></span> }</div> } else { <p>Brak statystyk.</p> }</div>
-        <div class="gn-panel"><h2>Uczestnicy</h2>@if (Model.Members.Any()) { <ul class="clean-list">@foreach (var member in Model.Members) { <li><span>👤</span><strong>@member.User?.Nick</strong>@if (member.IsAdmin) { <small>admin sesji</small> }</li> }</ul> } else { <p>Brak uczestników.</p> }</div>
-        <div class="gn-panel"><h2>Postacie</h2>@if (Model.CampaignCharacters.Any()) { <ul class="clean-list">@foreach (var item in Model.CampaignCharacters) { <li><span>🛡️</span><strong>@item.Character?.Name</strong><small>@item.Status</small></li> }</ul> } else { <p>Brak postaci przypisanych do kampanii.</p> }</div>
+        <div class="gn-panel">
+            <h2>Statystyki schematu postaci</h2>
+            @if (Model.Statistics.Any())
+            {
+                <div class="stat-chip-grid">
+                    @foreach (var stat in Model.Statistics)
+                    {
+                        <span class="stat-chip">✦ @stat.Name <small>domyślnie @stat.DefaultValue</small></span>
+                    }
+                </div>
+            }
+            else
+            {
+                <p>Brak statystyk.</p>
+            }
+        </div>
+
+
+        <div class="gn-panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2>Biblioteka kampanii</h2>
+                <a asp-controller="CampaignLibrary" asp-action="Index" asp-route-campaignId="@Model.Id" class="btn btn-gn-secondary">Otwórz bibliotekę</a>
+            </div>
+            <p class="text-muted">W tym miejscu MG może po utworzeniu kampanii dodać własne klasy, przedmioty, itemy, skille, techniki, zaklęcia i ich zasady.</p>
+
+            <div class="stat-chip-grid mb-3">
+                <span class="stat-chip">🧙 Klasy: <small>@Model.Classes.Count</small></span>
+                <span class="stat-chip">🎒 Przedmioty: <small>@Model.ItemTemplates.Count</small></span>
+                <span class="stat-chip">✨ Skille/techniki: <small>@Model.SkillTemplates.Count</small></span>
+            </div>
+
+            @if (canManageCampaign)
+            {
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-controller="CampaignLibrary" asp-action="CreateClass" asp-route-campaignId="@Model.Id" class="btn btn-sm btn-success">+ Klasa</a>
+                    <a asp-controller="CampaignLibrary" asp-action="CreateItem" asp-route-campaignId="@Model.Id" class="btn btn-sm btn-success">+ Przedmiot</a>
+                    <a asp-controller="CampaignLibrary" asp-action="CreateSkill" asp-route-campaignId="@Model.Id" class="btn btn-sm btn-success">+ Skill / technika</a>
+                </div>
+            }
+        </div>
+
+        <div class="gn-panel">
+            <h2>Uczestnicy</h2>
+            @if (Model.Members.Any())
+            {
+                <ul class="clean-list">
+                    @foreach (var member in Model.Members)
+                    {
+                        <li><span>👤</span><strong>@member.User?.Nick</strong>@if (member.IsAdmin) { <small>admin sesji</small> }</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>Brak uczestników.</p>
+            }
+        </div>
+
+        <div class="gn-panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2>Postacie</h2>
+                @if (canCreateCharacter)
+                {
+                    <a asp-controller="CharacterModels" asp-action="CreateForCampaign" asp-route-campaignId="@Model.Id" class="btn btn-gn-primary">Stwórz postać</a>
+                }
+                else if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form asp-action="Join" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input type="hidden" name="createCharacter" value="true" />
+                        <button type="submit" class="btn btn-gn-secondary">Dołącz i twórz postać</button>
+                    </form>
+                }
+            </div>
+
+            @if (Model.CampaignCharacters.Any())
+            {
+                <ul class="clean-list">
+                    @foreach (var item in Model.CampaignCharacters)
+                    {
+                        <li>
+                            <span>🛡️</span>
+                            <strong><a asp-controller="CharacterModels" asp-action="Details" asp-route-id="@item.CharacterId">@item.Character?.Name</a></strong>
+                            <small>@item.Status</small>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>Brak postaci przypisanych do kampanii.</p>
+            }
+        </div>
     </div>
 
     <div class="details-grid mt-3">
@@ -35,21 +162,10 @@
                         <div class="campaign-owner text-right">
                             <span>MG</span>
                             <strong>@session.GameMaster?.Nick</strong>
-                            <small>
-                                Start: @(session.StartAt.HasValue ? session.StartAt.Value.ToString("yyyy-MM-dd HH:mm") : "—")
-                            </small>
-                            <small>
-                                Czas: @session.DurationMinutes min
-                            </small>
-                            <small>
-                                @(session.IsPrivate ? "Prywatna" : "Otwarta")
-                            </small>
+                            <small>Start: @(session.StartAt.HasValue ? session.StartAt.Value.ToString("yyyy-MM-dd HH:mm") : "—")</small>
+                            <small>Czas: @session.DurationMinutes min</small>
+                            <small>@(session.IsPrivate ? "Prywatna" : "Otwarta")</small>
                         </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end mb-3">
-
-                        @* Możesz tu dodać dodatkowe akcje (edytuj/usuń) widoczne tylko dla uprawnionych użytkowników *@
                     </div>
                 }
             }

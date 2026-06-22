@@ -1,0 +1,88 @@
+@model IEnumerable<ProjectPBF.Models.CharacterSkillModel>
+@using ProjectPBF.Models.Enums
+@{
+    ViewData["Title"] = "Zatwierdzanie umiejętności";
+}
+
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Panel MG</span>
+            <h1>Zatwierdzanie umiejętności / technik</h1>
+            <p>Tu trafiają formularze zgłoszeń od graczy. MG może je zaakceptować albo odrzucić z komentarzem.</p>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center p-5">
+            <div style="font-size: 3rem;">✅</div>
+            <h3>Brak zgłoszeń</h3>
+            <p>Wszystkie umiejętności zostały już rozpatrzone.</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var skill in Model)
+        {
+            var campaignName = skill.Character?.CampaignCharacters?.FirstOrDefault()?.Campaign?.Title ?? "Brak kampanii";
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between gap-2 flex-wrap">
+                        <div>
+                            <h3>@skill.Name</h3>
+                            <p class="mb-1"><strong>Postać:</strong> @skill.Character?.Name</p>
+                            <p class="mb-1"><strong>Gracz:</strong> @skill.Character?.User?.Nick</p>
+                            <p class="mb-1"><strong>Kampania:</strong> @campaignName</p>
+                            <p class="mb-1"><strong>Typ:</strong> @(skill.Kind == SkillKind.Skill ? "Umiejętność" : "Technika")</p>
+                            @if (skill.CampaignSkillTemplate != null)
+                            {
+                                <p class="mb-1"><strong>Wzorzec:</strong> @skill.CampaignSkillTemplate.Name</p>
+                            }
+                        </div>
+                        <span class="badge bg-warning text-dark align-self-start">Oczekuje</span>
+                    </div>
+
+                    <div class="mt-3">
+                        <h5>Opis fabularny</h5>
+                        <p>@skill.Description</p>
+                    </div>
+
+                    <div class="row small g-2 mb-2">
+                        <div class="col-md-4"><strong>Koszt:</strong> @skill.Cost</div>
+                        <div class="col-md-4"><strong>Cooldown/limit:</strong> @skill.Cooldown</div>
+                        <div class="col-md-4"><strong>Koszt PH:</strong> @skill.RequestedHistoryPointCost</div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(skill.Requirements))
+                    {
+                        <p class="small mb-1"><strong>Wymagania:</strong> @skill.Requirements</p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(skill.Effect))
+                    {
+                        <p class="small mb-3"><strong>Efekt mechaniczny:</strong> @skill.Effect</p>
+                    }
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <form asp-action="Approve" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@skill.Id" />
+                                <input type="text" name="reviewComment" class="form-control mb-2" placeholder="Komentarz MG, opcjonalnie" />
+                                <button class="btn btn-success w-100">Zatwierdź</button>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <form asp-action="Reject" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@skill.Id" />
+                                <input type="text" name="reviewComment" class="form-control mb-2" placeholder="Powód odrzucenia" />
+                                <button class="btn btn-danger w-100">Odrzuć</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</section>

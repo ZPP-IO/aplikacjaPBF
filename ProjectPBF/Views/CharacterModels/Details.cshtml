@@ -1,14 +1,52 @@
-﻿@model ProjectPBF.Models.CharacterModel
+@model ProjectPBF.Models.CharacterModel
 @using ProjectPBF.Models.Enums
+@using System.Security.Claims
 
 @{
-    ViewData["Title"] = "Szczegóły postaci";
+    ViewData["Title"] = "Karta postaci";
+    var userIdText = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var isOwner = userIdText == Model.UserId.ToString();
+    var isStaff = User.IsInRole("Administrator") || User.IsInRole("GameMaster");
+    var isCampaignOwnerOrAdmin = Model.CampaignCharacters.Any(cc => cc.Campaign != null && cc.Campaign.GameMasterId.ToString() == userIdText);
+    var canManageProgress = isStaff || isCampaignOwnerOrAdmin;
+    var canEditExtras = isOwner || isStaff || isCampaignOwnerOrAdmin;
+    var rankName = Model.Experience switch
+    {
+        >= 1000 => "Legenda",
+        >= 700 => "Mistrz",
+        >= 400 => "Weteran",
+        >= 200 => "Doświadczony",
+        >= 100 => "Adept",
+        _ => "Nowicjusz"
+    };
 }
 
 <div class="container py-4">
-    <h1 class="mb-4">Szczegóły postaci</h1>
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-warning">@TempData["Error"]</div>
+    }
 
-    <div class="card shadow-sm">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <span class="eyebrow">Karta postaci</span>
+            <h1 class="mb-0">@Model.Name</h1>
+            <p class="text-muted mb-0">Statystyki, umiejętności, ekwipunek i rozwój postaci w jednym miejscu.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a asp-controller="CharacterModels" asp-action="Browse" class="btn btn-secondary">Powrót</a>
+            @if (canManageProgress)
+            {
+                <a asp-controller="CharacterProgress" asp-action="Award" asp-route-characterId="@Model.Id" class="btn btn-warning">Przyznaj EXP / PH / PK</a>
+            }
+            @if (isStaff)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edytuj</a>
+            }
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="row">
                 <div class="col-md-4 text-center mb-4">
@@ -18,24 +56,34 @@
                     }
                     else
                     {
-                        <div class="border rounded p-5 bg-light text-muted">
-                            Brak avatara
-                        </div>
+                        <div class="border rounded p-5 bg-light text-muted">Brak avatara</div>
                     }
                 </div>
 
                 <div class="col-md-8">
-                    <h2 class="mb-3">@Model.Name</h2>
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-6 col-lg-4"><div class="border rounded p-3 bg-light"><small>Właściciel</small><br /><strong>@(Model.User?.Nick ?? "Brak danych")</strong></div></div>
+                        <div class="col-sm-6 col-lg-4"><div class="border rounded p-3 bg-light"><small>Klasa</small><br /><strong>@(Model.CampaignClass?.Name ?? "Brak / do ustalenia")</strong></div></div>
+                        <div class="col-sm-6 col-lg-4"><div class="border rounded p-3 bg-light"><small>Ranga</small><br /><strong>@rankName</strong></div></div>
+                        <div class="col-sm-6 col-lg-4"><div class="border rounded p-3 bg-light"><small>Poziom</small><br /><strong>@Model.Level</strong></div></div>
+                        <div class="col-sm-6 col-lg-4"><div class="border rounded p-3 bg-light"><small>EXP</small><br /><strong>@Model.Experience</strong></div></div>
+                        <div class="col-sm-6 col-lg-4"><div class="border rounded p-3 bg-light"><small>PH</small><br /><strong>@Model.HistoryPoints</strong></div></div>
+                    </div>
 
-                    <p class="mb-2">
-                        <strong>Właściciel:</strong> @(Model.User?.Nick ?? "Brak danych")
-                    </p>
-
+                    <p class="mb-2"><strong>Wolne PK statystyk:</strong> <span class="badge bg-info text-dark">@Model.AvailableStatisticPoints</span></p>
                     <p class="mb-3">
-                        <strong>Status:</strong>
+                        <strong>Status karty:</strong>
                         @if (Model.Status == CharacterStatus.Approved)
                         {
                             <span class="badge bg-success">Zatwierdzona</span>
+                        }
+                        else if (Model.Status == CharacterStatus.Rejected)
+                        {
+                            <span class="badge bg-danger">Odrzucona</span>
+                        }
+                        else if (Model.Status == CharacterStatus.Archived)
+                        {
+                            <span class="badge bg-secondary">Archiwum</span>
                         }
                         else
                         {
@@ -43,50 +91,263 @@
                         }
                     </p>
 
-                    <div class="mb-4">
-                        <h4>Opis</h4>
-                        <p class="text-muted">
-                            @(string.IsNullOrWhiteSpace(Model.Description) ? "Brak opisu postaci." : Model.Description)
-                        </p>
-                    </div>
+                    <h4>Opis</h4>
+                    <p class="text-muted">@(string.IsNullOrWhiteSpace(Model.Description) ? "Brak opisu postaci." : Model.Description)</p>
 
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <div class="border rounded p-3 bg-light text-center">
-                                <h5>Siła</h5>
-                                <p class="mb-0 fs-4">@Model.Strength</p>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <div class="border rounded p-3 bg-light text-center">
-                                <h5>Zręczność</h5>
-                                <p class="mb-0 fs-4">@Model.Agility</p>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <div class="border rounded p-3 bg-light text-center">
-                                <h5>Inteligencja</h5>
-                                <p class="mb-0 fs-4">@Model.Intelligence</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <a asp-controller="CharacterModels" asp-action="Browse" class="btn btn-secondary me-2">
-                            Powrót do przeglądu
-                        </a>
-
-                        @if (User.IsInRole("Admin") || User.IsInRole("GameMaster"))
-                        {
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
-                                Edytuj
-                            </a>
-                        }
-                    </div>
+                    <h4 class="mt-4">Kampanie</h4>
+                    @if (!Model.CampaignCharacters.Any())
+                    {
+                        <p class="text-muted">Postać nie jest przypisana do kampanii.</p>
+                    }
+                    else
+                    {
+                        <ul class="list-group mb-3">
+                            @foreach (var cc in Model.CampaignCharacters)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>@cc.Campaign?.Title</span>
+                                    <span class="badge bg-secondary">@cc.Status</span>
+                                </li>
+                            }
+                        </ul>
+                    }
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="mb-0">Statystyki</h3>
+                        <span class="badge bg-info text-dark">Wolne PK: @Model.AvailableStatisticPoints</span>
+                    </div>
+
+                    @if (Model.StatisticValues.Any())
+                    {
+                        <div class="row">
+                            @foreach (var stat in Model.StatisticValues.OrderBy(s => s.Statistic.Name))
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3 bg-light text-center h-100">
+                                        <h5>@stat.Statistic.Name</h5>
+                                        <p class="mb-2 fs-4">@stat.Value</p>
+
+                                        @if (canEditExtras && Model.AvailableStatisticPoints > 0)
+                                        {
+                                            <form asp-controller="CharacterProgress" asp-action="SpendStatPoint" method="post" class="d-flex gap-2 justify-content-center">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="characterId" value="@Model.Id" />
+                                                <input type="hidden" name="statisticValueId" value="@stat.Id" />
+                                                <input name="amount" type="number" min="1" max="@Model.AvailableStatisticPoints" value="1" class="form-control form-control-sm" style="max-width: 75px" />
+                                                <button type="submit" class="btn btn-sm btn-success">Dodaj PK</button>
+                                            </form>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-md-4 mb-3"><div class="border rounded p-3 bg-light text-center"><h5>Siła</h5><p class="mb-0 fs-4">@Model.Strength</p></div></div>
+                            <div class="col-md-4 mb-3"><div class="border rounded p-3 bg-light text-center"><h5>Zręczność</h5><p class="mb-0 fs-4">@Model.Agility</p></div></div>
+                            <div class="col-md-4 mb-3"><div class="border rounded p-3 bg-light text-center"><h5>Inteligencja</h5><p class="mb-0 fs-4">@Model.Intelligence</p></div></div>
+                        </div>
+                    }
+
+                    @if (canEditExtras && Model.AvailableStatisticPoints <= 0)
+                    {
+                        <small class="text-muted">Brak wolnych PK. MG może dodać punkty w panelu „Przyznaj EXP / PH / PK”.</small>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="mb-0">Umiejętności i techniki</h3>
+                        @if (canEditExtras)
+                        {
+                            <a asp-controller="CharacterSkills" asp-action="Create" asp-route-characterId="@Model.Id" class="btn btn-sm btn-success">Zgłoś nową</a>
+                        }
+                    </div>
+
+                    @if (!Model.Skills.Any())
+                    {
+                        <p class="text-muted">Brak zgłoszonych umiejętności.</p>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            @foreach (var skill in Model.Skills.OrderBy(s => s.Status).ThenByDescending(s => s.SubmittedAt))
+                            {
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <div>
+                                            <strong>@skill.Name</strong>
+                                            <div class="small text-muted">
+                                                @(skill.Kind == SkillKind.Skill ? "Umiejętność" : "Technika")
+                                                @if (skill.CampaignSkillTemplate != null)
+                                                {
+                                                    <span> | z biblioteki kampanii</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        @if (skill.Status == SkillStatus.Approved)
+                                        {
+                                            <span class="badge bg-success align-self-start">Zatwierdzona</span>
+                                        }
+                                        else if (skill.Status == SkillStatus.Rejected)
+                                        {
+                                            <span class="badge bg-danger align-self-start">Odrzucona</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark align-self-start">Oczekuje na MG</span>
+                                        }
+                                    </div>
+
+                                    <p class="mb-2 mt-2">@skill.Description</p>
+
+                                    <div class="row small g-2">
+                                        <div class="col-md-4"><strong>Koszt:</strong> @skill.Cost</div>
+                                        <div class="col-md-4"><strong>Cooldown/limit:</strong> @skill.Cooldown</div>
+                                        <div class="col-md-4"><strong>Koszt PH:</strong> @skill.RequestedHistoryPointCost</div>
+                                    </div>
+
+                                    @if (!string.IsNullOrWhiteSpace(skill.Requirements))
+                                    {
+                                        <p class="small mb-1 mt-2"><strong>Wymagania:</strong> @skill.Requirements</p>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(skill.Effect))
+                                    {
+                                        <p class="small mb-1"><strong>Efekt:</strong> @skill.Effect</p>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(skill.ReviewComment))
+                                    {
+                                        <p class="small mb-0"><strong>Komentarz MG:</strong> @skill.ReviewComment</p>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Ekwipunek</h3>
+                @if (canEditExtras)
+                {
+                    <a asp-controller="InventoryItems" asp-action="Create" asp-route-characterId="@Model.Id" class="btn btn-sm btn-success">Dodaj przedmiot</a>
+                }
+            </div>
+
+            @if (!Model.InventoryItems.Any())
+            {
+                <p class="text-muted">Brak przedmiotów.</p>
+            }
+            else
+            {
+                <table class="table table-sm table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Nazwa</th>
+                            <th>Typ</th>
+                            <th>Ilość</th>
+                            <th>Status</th>
+                            <th>Źródło</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.InventoryItems.OrderBy(i => i.Name))
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.Name</strong>
+                                    @if (!string.IsNullOrWhiteSpace(item.Rarity))
+                                    {
+                                        <span class="badge bg-secondary ms-1">@item.Rarity</span>
+                                    }
+                                    <br />
+                                    <small>@item.Description</small>
+                                    @if (!string.IsNullOrWhiteSpace(item.Effect))
+                                    {
+                                        <br /><small><strong>Efekt:</strong> @item.Effect</small>
+                                    }
+                                </td>
+                                <td>@(item.ItemType ?? "-")</td>
+                                <td>@item.Quantity</td>
+                                <td>@(item.IsEquipped ? "Założony" : "W plecaku")</td>
+                                <td>@(item.Source ?? (item.CampaignItemTemplate != null ? "Biblioteka kampanii" : "-"))</td>
+                                <td class="text-end">
+                                    @if (canEditExtras)
+                                    {
+                                        <form asp-controller="InventoryItems" asp-action="ToggleEquipped" asp-route-id="@item.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button class="btn btn-sm btn-outline-primary">Zmień</button>
+                                        </form>
+                                        <form asp-controller="InventoryItems" asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button class="btn btn-sm btn-outline-danger">Usuń</button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h3>Historia rozwoju postaci</h3>
+            @if (!Model.DevelopmentLogs.Any())
+            {
+                <p class="text-muted">Brak historii rozwoju.</p>
+            }
+            else
+            {
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>EXP</th>
+                            <th>PH</th>
+                            <th>PK</th>
+                            <th>Powód</th>
+                            <th>Źródło</th>
+                            <th>Dodał</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model.DevelopmentLogs.OrderByDescending(l => l.CreatedAt))
+                        {
+                            <tr>
+                                <td>@log.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@(log.ExperienceChange >= 0 ? "+" : "")@log.ExperienceChange</td>
+                                <td>@(log.HistoryPointsChange >= 0 ? "+" : "")@log.HistoryPointsChange</td>
+                                <td>@(log.StatisticPointsChange >= 0 ? "+" : "")@log.StatisticPointsChange</td>
+                                <td>@log.Reason</td>
+                                <td>@log.Source</td>
+                                <td>@(log.CreatedByUser?.Nick ?? "system")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
         </div>
     </div>
 </div>

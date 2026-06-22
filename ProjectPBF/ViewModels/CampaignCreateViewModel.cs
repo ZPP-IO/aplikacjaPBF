@@ -15,8 +15,12 @@ namespace ProjectPBF.ViewModels
         public string Description { get; set; } = null!;
 
         [Range(0, 999)]
-        [Display(Name = "Pula punktów do rozdania")]
+        [Display(Name = "Pula punktów do rozdania przy tworzeniu postaci")]
         public int StartingPoints { get; set; } = 20;
+
+        [Range(0, 999)]
+        [Display(Name = "Przyrost PK na poziom")]
+        public int StatisticPointsPerLevel { get; set; } = 5;
 
         [Required]
         [Display(Name = "Statystyki")]

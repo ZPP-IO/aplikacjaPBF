@@ -1,4 +1,4 @@
-﻿@model ProjectPBF.Models.CharacterModel
+@model ProjectPBF.Models.CharacterModel
 
 @{
     ViewData["Title"] = "Edytuj postać";
@@ -14,6 +14,10 @@
 
                 <input type="hidden" asp-for="Id" />
                 <input type="hidden" asp-for="UserId" />
+                <input type="hidden" asp-for="Experience" />
+                <input type="hidden" asp-for="HistoryPoints" />
+                <input type="hidden" asp-for="Level" />
+                <input type="hidden" asp-for="AvailableStatisticPoints" />
 
                 <div class="mb-3">
                     <label asp-for="Name" class="form-label">Nazwa postaci</label>

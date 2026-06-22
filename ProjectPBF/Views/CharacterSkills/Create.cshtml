@@ -1,0 +1,127 @@
+@model ProjectPBF.Models.CharacterSkillModel
+@using ProjectPBF.Models
+@using ProjectPBF.Models.Enums
+@{
+    ViewData["Title"] = "Zgłoś umiejętność";
+    var templates = ViewBag.SkillTemplates as List<CampaignSkillTemplateModel> ?? new List<CampaignSkillTemplateModel>();
+    var selectedTemplateId = ViewBag.SelectedTemplateId as int?;
+}
+
+<section class="page-panel narrow">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Postać: @ViewBag.CharacterName | Kampania: @ViewBag.CampaignTitle</span>
+            <h1>Zgłoś umiejętność / technikę do zatwierdzenia przez MG</h1>
+            <p>Gracz wysyła propozycję, a MG zatwierdza ją albo odrzuca w panelu zgłoszeń.</p>
+        </div>
+    </div>
+
+    <form asp-action="Create" method="post" class="gn-form">
+        @Html.AntiForgeryToken()
+        <input asp-for="CharacterId" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="CampaignSkillTemplateId" class="form-label"></label>
+            <select asp-for="CampaignSkillTemplateId" id="skillTemplateSelect" class="form-control">
+                <option value="">Własna umiejętność / technika</option>
+                @foreach (var template in templates)
+                {
+                    var mappedKind = template.Kind == CampaignSkillTemplateKind.Technique ? (int)SkillKind.Technique : (int)SkillKind.Skill;
+                    <option value="@template.Id"
+                            data-name="@template.Name"
+                            data-description="@template.Description"
+                            data-kind="@mappedKind"
+                            data-requirements="@template.Requirements"
+                            data-effect="@template.Effect"
+                            data-cost="@template.Cost"
+                            data-cooldown="@template.Cooldown"
+                            selected="@(selectedTemplateId == template.Id ? "selected" : null)">
+                        @template.Name (@template.Kind) — koszt @template.Cost, limit @template.Cooldown
+                    </option>
+                }
+            </select>
+            <small class="form-text">MG może wcześniej dodać skille/techniki w bibliotece kampanii. Wybór wzorca automatycznie uzupełnia formularz.</small>
+            <span asp-validation-for="CampaignSkillTemplateId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" id="skillName" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Kind" class="form-label"></label>
+            <select asp-for="Kind" id="skillKind" class="form-control">
+                <option value="@SkillKind.Skill">Umiejętność</option>
+                <option value="@SkillKind.Technique">Technika</option>
+            </select>
+            <span asp-validation-for="Kind" class="text-danger"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="Cost" class="form-label"></label>
+                <input asp-for="Cost" id="skillCost" class="form-control" type="number" min="0" max="999" />
+                <span asp-validation-for="Cost" class="text-danger"></span>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Cooldown" class="form-label"></label>
+                <input asp-for="Cooldown" id="skillCooldown" class="form-control" type="number" min="0" max="999" />
+                <span asp-validation-for="Cooldown" class="text-danger"></span>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="RequestedHistoryPointCost" class="form-label"></label>
+                <input asp-for="RequestedHistoryPointCost" class="form-control" type="number" min="0" max="999" />
+                <small class="form-text">Opcjonalnie: ile PH ma kosztować nauczenie tej techniki.</small>
+                <span asp-validation-for="RequestedHistoryPointCost" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Requirements" class="form-label"></label>
+            <textarea asp-for="Requirements" id="skillRequirements" class="form-control" rows="3" placeholder="Np. poziom 3, Inteligencja 5, klasa Mag, zgoda MG."></textarea>
+            <span asp-validation-for="Requirements" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Effect" class="form-label"></label>
+            <textarea asp-for="Effect" id="skillEffect" class="form-control" rows="4" placeholder="Konkretny efekt mechaniczny: obrażenia, premia, rzut, czas trwania, ograniczenia."></textarea>
+            <span asp-validation-for="Effect" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <textarea asp-for="Description" id="skillDescription" class="form-control" rows="5" placeholder="Opis fabularny, wygląd techniki, przykład użycia w poście."></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="alert alert-info">
+            Po wysłaniu status będzie: <strong>oczekuje</strong>. Umiejętność pojawi się na karcie postaci, ale dopiero MG może ją zatwierdzić.
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-gn-primary">Wyślij do MG</button>
+            <a asp-controller="CharacterModels" asp-action="Details" asp-route-id="@Model.CharacterId" class="btn btn-gn-secondary">Wróć</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        document.getElementById('skillTemplateSelect')?.addEventListener('change', function () {
+            const option = this.options[this.selectedIndex];
+            if (!option || !option.value) return;
+
+            document.getElementById('skillName').value = option.dataset.name || '';
+            document.getElementById('skillDescription').value = option.dataset.description || '';
+            document.getElementById('skillKind').value = option.dataset.kind || '0';
+            document.getElementById('skillRequirements').value = option.dataset.requirements || '';
+            document.getElementById('skillEffect').value = option.dataset.effect || '';
+            document.getElementById('skillCost').value = option.dataset.cost || '0';
+            document.getElementById('skillCooldown').value = option.dataset.cooldown || '0';
+        });
+    </script>
+}

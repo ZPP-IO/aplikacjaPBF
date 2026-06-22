@@ -1,0 +1,69 @@
+@model IEnumerable<ProjectPBF.Models.CharacterSkillModel>
+@using ProjectPBF.Models.Enums
+@{
+    ViewData["Title"] = "Moje umiejętności";
+}
+
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Postacie</span>
+            <h1>Moje zgłoszone umiejętności / techniki</h1>
+            <p>Lista wszystkich formularzy wysłanych do MG.</p>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <p>Nie masz jeszcze zgłoszonych umiejętności.</p>
+    }
+    else
+    {
+        <table class="table table-dark table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Postać</th>
+                    <th>Nazwa</th>
+                    <th>Typ</th>
+                    <th>Koszt</th>
+                    <th>Limit</th>
+                    <th>Status</th>
+                    <th>Komentarz MG</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var skill in Model)
+                {
+                    <tr>
+                        <td>@skill.Character?.Name</td>
+                        <td>
+                            <strong>@skill.Name</strong>
+                            @if (skill.CampaignSkillTemplate != null)
+                            {
+                                <br /><small>z biblioteki kampanii</small>
+                            }
+                        </td>
+                        <td>@(skill.Kind == SkillKind.Skill ? "Umiejętność" : "Technika")</td>
+                        <td>@skill.Cost</td>
+                        <td>@skill.Cooldown</td>
+                        <td>
+                            @if (skill.Status == SkillStatus.Approved)
+                            {
+                                <span class="badge bg-success">Zatwierdzona</span>
+                            }
+                            else if (skill.Status == SkillStatus.Rejected)
+                            {
+                                <span class="badge bg-danger">Odrzucona</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Oczekuje</span>
+                            }
+                        </td>
+                        <td>@skill.ReviewComment</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</section>

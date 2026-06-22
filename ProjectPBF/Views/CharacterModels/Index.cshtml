@@ -1,84 +1,87 @@
-﻿@model IEnumerable<ProjectPBF.Models.CharacterModel>
+@model IEnumerable<ProjectPBF.Models.CharacterModel>
 @using ProjectPBF.Models.Enums
 @{
     ViewData["Title"] = "Moje postacie";
 }
 
-<h1>Moje postacie</h1>
+<section class="page-panel">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <span class="eyebrow">Mój panel</span>
+            <h1>Moje postacie</h1>
+        </div>
+        <a asp-action="Create" class="btn btn-success">Stwórz nową postać</a>
+    </div>
 
-<p>
-    <a asp-action="Create" class="btn btn-success">Stwórz nową postać</a>
-</p>
-
-@* Dodano klasę table-dark dla lepszej widoczności na ciemnym tle *@
-<table class="table table-dark table-hover">
-    <thead>
-        <tr>
-            <th>Awatar</th>
-            <th>@Html.DisplayNameFor(model => model.Name)</th>
-            <th>@Html.DisplayNameFor(model => model.Description)</th>
-            <th class="text-light">@Html.DisplayNameFor(model => model.Strength)</th>
-            <th class="text-light">@Html.DisplayNameFor(model => model.Agility)</th>
-            <th class="text-light">@Html.DisplayNameFor(model => model.Intelligence)</th>
-            <th>@Html.DisplayNameFor(model => model.Status)</th>
-            <th>Właściciel</th>
-            <th>Akcje</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+    <table class="table table-dark table-hover">
+        <thead>
             <tr>
-                <td>
-                    @if (!string.IsNullOrEmpty(item.AvatarUrl))
-                    {
-                        <img src="@item.AvatarUrl" alt="Postać" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #444;" />
-                    }
-                    else
-                    {
-                        <div style="width: 60px; height: 60px; background-color: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #777; font-size: 10px;">Brak</div>
-                    }
-                </td>
-                <td>
-                    <strong>@Html.DisplayFor(modelItem => item.Name)</strong>
-                </td>
-                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td class="text-light fw-bold">
-                    @Html.DisplayFor(modelItem => item.Strength)
-                </td>
-                <td class="text-light fw-bold">
-                    @Html.DisplayFor(modelItem => item.Agility)
-                </td>
-                <td class="text-light fw-bold">
-                    @Html.DisplayFor(modelItem => item.Intelligence)
-                </td>
-                <td>
-                    @if (item.Status == CharacterStatus.Approved)
-                    {
-                        <span class="badge bg-success">Zatwierdzona</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-warning text-dark">Oczekuje</span>
-                    }
-                </td>
-                <td>
-                    @(item.User?.Nick ?? "Nieznany")
-                </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.Id" class="text-warning">Szczegóły</a>
-
-                    @if (User.IsInRole("Admin") || User.IsInRole("GameMaster"))
-                    {
-                        <span class="text-muted"> | </span>
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edytuj</a>
-                        <span class="text-muted"> | </span>
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="text-danger">Usuń</a>
-                    }
-                </td>
+                <th>Awatar</th>
+                <th>Nazwa</th>
+                <th>Opis</th>
+                <th>Kampania</th>
+                <th>Poziom</th>
+                <th>EXP</th>
+                <th>PH</th>
+                <th>Wolne PK</th>
+                <th>Status</th>
+                <th>Właściciel</th>
+                <th>Akcje</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.AvatarUrl))
+                        {
+                            <img src="@item.AvatarUrl" alt="Postać" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #444;" />
+                        }
+                        else
+                        {
+                            <div style="width: 60px; height: 60px; background-color: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #777; font-size: 10px;">Brak</div>
+                        }
+                    </td>
+                    <td><strong>@item.Name</strong></td>
+                    <td style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@item.Description</td>
+                    <td>@(item.CampaignCharacters.FirstOrDefault()?.Campaign?.Title ?? "—")</td>
+                    <td>@item.Level</td>
+                    <td>@item.Experience</td>
+                    <td>@item.HistoryPoints</td>
+                    <td>@item.AvailableStatisticPoints</td>
+                    <td>
+                        @if (item.Status == CharacterStatus.Approved)
+                        {
+                            <span class="badge bg-success">Zatwierdzona</span>
+                        }
+                        else if (item.Status == CharacterStatus.Rejected)
+                        {
+                            <span class="badge bg-danger">Odrzucona</span>
+                        }
+                        else if (item.Status == CharacterStatus.Archived)
+                        {
+                            <span class="badge bg-secondary">Archiwum</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Oczekuje</span>
+                        }
+                    </td>
+                    <td>@(item.User?.Nick ?? "Nieznany")</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="text-warning">Szczegóły</a>
+
+                        @if (User.IsInRole("Administrator") || User.IsInRole("GameMaster"))
+                        {
+                            <span class="text-muted"> | </span>
+                            <a asp-action="Edit" asp-route-id="@item.Id">Edytuj</a>
+                            <span class="text-muted"> | </span>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="text-danger">Usuń</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>

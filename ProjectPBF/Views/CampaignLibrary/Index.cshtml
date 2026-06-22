@@ -1,0 +1,173 @@
+@model ProjectPBF.Models.CampaignModel
+@using ProjectPBF.Models.Enums
+@{
+    ViewData["Title"] = "Biblioteka kampanii";
+    var canManage = ViewBag.CanManageCampaignLibrary == true;
+}
+
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Kampania: @Model.Title</span>
+            <h1>Biblioteka kampanii</h1>
+            <p class="text-muted mb-0">Tu MG tworzy elementy dostępne tylko w tej kampanii: klasy, przedmioty, umiejętności, techniki i zasady mechaniczne.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a asp-controller="Campaigns" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-gn-secondary">Wróć do kampanii</a>
+            @if (canManage)
+            {
+                <a asp-action="CreateClass" asp-route-campaignId="@Model.Id" class="btn btn-gn-primary">+ Klasa</a>
+                <a asp-action="CreateItem" asp-route-campaignId="@Model.Id" class="btn btn-gn-primary">+ Przedmiot</a>
+                <a asp-action="CreateSkill" asp-route-campaignId="@Model.Id" class="btn btn-gn-primary">+ Skill / technika</a>
+            }
+        </div>
+    </div>
+
+    @if (!canManage)
+    {
+        <div class="alert alert-info">Masz podgląd biblioteki. Edytować może tylko właściciel kampanii, admin kampanii albo Administrator.</div>
+    }
+
+    <div class="details-grid">
+        <div class="gn-panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2>Klasy postaci</h2>
+                @if (canManage)
+                {
+                    <a asp-action="CreateClass" asp-route-campaignId="@Model.Id" class="btn btn-sm btn-success">Dodaj klasę</a>
+                }
+            </div>
+
+            @if (Model.Classes.Any())
+            {
+                <div class="list-group">
+                    @foreach (var cls in Model.Classes.OrderBy(x => x.Name))
+                    {
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between gap-2">
+                                <div>
+                                    <strong>@cls.Name</strong>
+                                    @if (!cls.IsActive)
+                                    {
+                                        <span class="badge bg-secondary ms-1">nieaktywna</span>
+                                    }
+                                    <p class="mb-1 mt-2">@cls.Description</p>
+                                    <small class="text-muted">Główna statystyka: @(cls.MainStatistic ?? "—") | HP: @cls.StartingHealth | Zasób: @cls.StartingResource | Złoto: @cls.StartingGold</small>
+                                </div>
+                                @if (canManage)
+                                {
+                                    <form asp-action="DeleteClass" asp-route-id="@cls.Id" method="post" onsubmit="return confirm('Usunąć klasę z biblioteki kampanii?');">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-danger">Usuń</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">Brak klas. Dodaj np. Wojownik, Mag, Łotrzyk, Nekromanta.</p>
+            }
+        </div>
+
+        <div class="gn-panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2>Przedmioty / itemy</h2>
+                @if (canManage)
+                {
+                    <a asp-action="CreateItem" asp-route-campaignId="@Model.Id" class="btn btn-sm btn-success">Dodaj przedmiot</a>
+                }
+            </div>
+
+            @if (Model.ItemTemplates.Any())
+            {
+                <div class="list-group">
+                    @foreach (var item in Model.ItemTemplates.OrderBy(x => x.Name))
+                    {
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between gap-2">
+                                <div>
+                                    <strong>@item.Name</strong>
+                                    @if (!item.IsAvailable)
+                                    {
+                                        <span class="badge bg-secondary ms-1">ukryty</span>
+                                    }
+                                    <p class="mb-1 mt-2">@item.Description</p>
+                                    <small class="text-muted">Typ: @item.ItemType | Rzadkość: @(item.Rarity ?? "—") | Cena: @item.Price</small>
+                                    @if (!string.IsNullOrWhiteSpace(item.Effect))
+                                    {
+                                        <div><small><strong>Efekt:</strong> @item.Effect</small></div>
+                                    }
+                                </div>
+                                @if (canManage)
+                                {
+                                    <form asp-action="DeleteItem" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Usunąć przedmiot z biblioteki kampanii?');">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-danger">Usuń</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">Brak przedmiotów. Dodaj np. miecz, pancerz, miksturę, artefakt.</p>
+            }
+        </div>
+
+        <div class="gn-panel" style="flex: 1 1 100%;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2>Umiejętności, techniki i zaklęcia</h2>
+                @if (canManage)
+                {
+                    <a asp-action="CreateSkill" asp-route-campaignId="@Model.Id" class="btn btn-sm btn-success">Dodaj skill / technikę</a>
+                }
+            </div>
+
+            @if (Model.SkillTemplates.Any())
+            {
+                <div class="list-group">
+                    @foreach (var skill in Model.SkillTemplates.OrderBy(x => x.Name))
+                    {
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between gap-2">
+                                <div>
+                                    <strong>@skill.Name</strong>
+                                    @if (!skill.IsAvailable)
+                                    {
+                                        <span class="badge bg-secondary ms-1">ukryta</span>
+                                    }
+                                    <p class="mb-1 mt-2">@skill.Description</p>
+                                    <small class="text-muted">Typ: @skill.Kind | Koszt: @skill.Cost | Cooldown: @skill.Cooldown</small>
+                                    @if (!string.IsNullOrWhiteSpace(skill.Requirements))
+                                    {
+                                        <div><small><strong>Wymagania:</strong> @skill.Requirements</small></div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(skill.Effect))
+                                    {
+                                        <div><small><strong>Efekt:</strong> @skill.Effect</small></div>
+                                    }
+                                </div>
+                                @if (canManage)
+                                {
+                                    <form asp-action="DeleteSkill" asp-route-id="@skill.Id" method="post" onsubmit="return confirm('Usunąć skill/technikę z biblioteki kampanii?');">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-danger">Usuń</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">Brak umiejętności. Dodaj np. Atak mieczem, Kula ognia, Unik, Krwawy pakt.</p>
+            }
+        </div>
+    </div>
+</section>

@@ -1,0 +1,309 @@
+@model ProjectPBF.ViewModels.CharacterCreateInCampaignViewModel
+@{
+    ViewData["Title"] = "Stwórz postać do kampanii";
+    var usedPoints = Model.Statistics?.Sum(s => Math.Max(0, s.Value)) ?? 0;
+    var remainingPoints = Math.Max(0, Model.StartingPoints - usedPoints);
+    var barWidth = Model.StartingPoints > 0 ? Math.Min(100, usedPoints * 100 / Model.StartingPoints) : 0;
+}
+
+<style>
+    .points-wallet {
+        border: 1px solid rgba(66,217,255,.24);
+        background: rgba(66,217,255,.07);
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 18px;
+    }
+
+    .points-wallet-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+
+    .points-wallet strong {
+        color: var(--gold-2);
+    }
+
+    .points-progress {
+        height: 12px;
+        background: rgba(0,0,0,.35);
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .points-progress-fill {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, var(--cyan), var(--gold-2));
+        transition: width .15s ease;
+    }
+
+    .points-message {
+        min-height: 22px;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: .92rem;
+    }
+
+    .points-message.warning {
+        color: #ffb4a8;
+        font-weight: 800;
+    }
+
+    .stat-row {
+        display: grid;
+        grid-template-columns: minmax(130px, 1fr) 220px;
+        gap: 12px;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .stat-row:last-child {
+        border-bottom: none;
+    }
+
+    .stat-name {
+        color: var(--gold-2);
+        font-weight: 900;
+    }
+
+    .stat-hint {
+        display: block;
+        color: var(--muted);
+        font-size: .84rem;
+        margin-top: 2px;
+    }
+
+    .stat-control {
+        display: grid;
+        grid-template-columns: 44px 1fr 44px;
+        gap: 8px;
+    }
+
+    .stat-step {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    @@media(max-width:760px) {
+        .stat-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<section class="page-panel narrow">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Kampania: @Model.CampaignTitle</span>
+            <h1>Stwórz postać do kampanii</h1>
+        </div>
+    </div>
+
+    <form asp-action="CreateForCampaign" method="post" class="gn-form" id="characterCreateForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="CampaignId" />
+        <input type="hidden" asp-for="CampaignTitle" />
+        <input type="hidden" asp-for="StartingPoints" id="StartingPoints" />
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="AvatarUrl" class="form-label"></label>
+            <input asp-for="AvatarUrl" class="form-control" placeholder="https://adres-obrazka.pl/avatar.jpg" />
+            <div class="form-text">Wklej zwykły link do obrazka. Nie wklejaj tekstu zaczynającego się od <code>data:image/...base64</code>, bo to jest cały obrazek zapisany jako tekst.</div>
+            <span asp-validation-for="AvatarUrl" class="text-danger"></span>
+        </div>
+
+        @if (Model.ClassOptions.Any())
+        {
+            <div class="mb-3">
+                <label asp-for="CampaignClassId" class="form-label"></label>
+                <select asp-for="CampaignClassId" asp-items="Model.ClassOptions" class="form-select"></select>
+                <span asp-validation-for="CampaignClassId" class="text-danger"></span>
+                <small class="form-text">Klasy są tworzone przez MG w bibliotece danej kampanii.</small>
+            </div>
+        }
+
+        <div class="gn-panel mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2>Statystyki postaci</h2>
+            </div>
+            <p class="text-muted">Te pola są pobierane ze schematu, który MG ustawił przy tworzeniu kampanii.</p>
+
+            <div class="points-wallet" data-total-points="@Model.StartingPoints">
+                <div class="points-wallet-top">
+                    <span>Rozdano: <strong id="usedPoints">@usedPoints</strong>/<strong>@Model.StartingPoints</strong> PK</span>
+                    <span>Pozostało: <strong id="remainingPoints">@remainingPoints</strong> PK</span>
+                </div>
+                <div class="points-progress" aria-label="Wykorzystanie punktów statystyk">
+                    <div class="points-progress-fill" id="pointsProgressFill" style="width: @barWidth%"></div>
+                </div>
+                <div class="points-message" id="pointsMessage"></div>
+            </div>
+
+            @for (var i = 0; i < Model.Statistics.Count; i++)
+            {
+                var currentValue = Math.Max(0, Model.Statistics[i].Value);
+                var maxForThisStat = Math.Max(0, Model.StartingPoints - usedPoints + currentValue);
+
+                <input type="hidden" asp-for="Statistics[i].StatisticId" />
+                <input type="hidden" asp-for="Statistics[i].Name" />
+
+                <div class="stat-row" data-stat-row>
+                    <div>
+                        <label class="stat-name" for="Statistics_@(i)__Value">@Model.Statistics[i].Name</label>
+                        <span class="stat-hint">Maksymalnie teraz: <strong data-stat-max>@maxForThisStat</strong> PK</span>
+                    </div>
+
+                    <div>
+                        <div class="stat-control">
+                            <button type="button" class="btn btn-gn-secondary stat-step" data-delta="-1" aria-label="Odejmij punkt">−</button>
+                            <input asp-for="Statistics[i].Value" class="form-control text-center stat-input" type="number" min="0" max="@Model.StartingPoints" data-stat-input />
+                            <button type="button" class="btn btn-gn-secondary stat-step" data-delta="1" aria-label="Dodaj punkt">+</button>
+                        </div>
+                        <span asp-validation-for="Statistics[i].Value" class="text-danger"></span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-gn-primary" id="saveCharacterButton">Zapisz postać</button>
+            <a asp-controller="Campaigns" asp-action="Details" asp-route-id="@Model.CampaignId" class="btn btn-gn-secondary">Wróć do kampanii</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        (() => {
+            const wallet = document.querySelector('[data-total-points]');
+            if (!wallet) return;
+
+            const total = Number(wallet.dataset.totalPoints || 0);
+            const inputs = Array.from(document.querySelectorAll('[data-stat-input]'));
+            const usedPoints = document.getElementById('usedPoints');
+            const remainingPoints = document.getElementById('remainingPoints');
+            const pointsProgressFill = document.getElementById('pointsProgressFill');
+            const pointsMessage = document.getElementById('pointsMessage');
+            const saveButton = document.getElementById('saveCharacterButton');
+
+            function readValue(input) {
+                const value = Number.parseInt(input.value, 10);
+                return Number.isFinite(value) && value > 0 ? value : 0;
+            }
+
+            function usedExcept(currentInput) {
+                return inputs.reduce((sum, input) => input === currentInput ? sum : sum + readValue(input), 0);
+            }
+
+            function clampInput(input) {
+                let value = readValue(input);
+                const maxForInput = Math.max(0, total - usedExcept(input));
+
+                if (value > maxForInput) {
+                    value = maxForInput;
+                }
+
+                if (value < 0) {
+                    value = 0;
+                }
+
+                input.value = value;
+            }
+
+            function refresh() {
+                const used = inputs.reduce((sum, input) => sum + readValue(input), 0);
+                const remaining = Math.max(0, total - used);
+                const percent = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
+
+                usedPoints.textContent = used;
+                remainingPoints.textContent = remaining;
+                pointsProgressFill.style.width = `${percent}%`;
+
+                inputs.forEach(input => {
+                    const row = input.closest('[data-stat-row]');
+                    const maxLabel = row?.querySelector('[data-stat-max]');
+                    if (maxLabel) {
+                        maxLabel.textContent = Math.max(0, total - usedExcept(input));
+                    }
+                });
+
+                pointsMessage.classList.remove('warning');
+
+                if (used === total) {
+                    pointsMessage.textContent = 'Wykorzystano całą pulę punktów. Możesz zapisać postać albo odjąć punkty z wybranej statystyki.';
+                } else if (used > total) {
+                    pointsMessage.textContent = `Przekroczono pulę o ${used - total} PK. Zmniejsz statystyki przed zapisem.`;
+                    pointsMessage.classList.add('warning');
+                } else {
+                    pointsMessage.textContent = `Możesz jeszcze rozdać ${remaining} PK.`;
+                }
+
+                if (saveButton) {
+                    saveButton.disabled = used > total;
+                }
+            }
+
+            inputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    clampInput(input);
+                    refresh();
+                });
+
+                input.addEventListener('blur', () => {
+                    clampInput(input);
+                    refresh();
+                });
+            });
+
+            document.querySelectorAll('[data-delta]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const row = button.closest('[data-stat-row]');
+                    const input = row?.querySelector('[data-stat-input]');
+                    if (!input) return;
+
+                    const delta = Number.parseInt(button.dataset.delta || '0', 10);
+                    input.value = readValue(input) + delta;
+                    clampInput(input);
+                    refresh();
+                });
+            });
+
+            document.getElementById('characterCreateForm')?.addEventListener('submit', (event) => {
+                inputs.forEach(clampInput);
+                const used = inputs.reduce((sum, input) => sum + readValue(input), 0);
+
+                if (used > total) {
+                    event.preventDefault();
+                    pointsMessage.textContent = `Przekroczono pulę punktów. Rozdano ${used}/${total}.`;
+                    pointsMessage.classList.add('warning');
+                }
+            });
+
+            inputs.forEach(clampInput);
+            refresh();
+        })();
+    </script>
+}

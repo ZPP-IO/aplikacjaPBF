@@ -19,13 +19,14 @@
                         <ul class="navbar-nav mx-auto gn-menu">
                             <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Strona główna</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Campaigns" asp-action="Browse">Kampanie</a></li>
-                            @*<li class="nav-item"><a class="nav-link" asp-controller="Campaigns" asp-action="Index">Moje sesje</a></li>*@
                             <li class="nav-item"><a class="nav-link" href="/Forums">Fora</a></li>
-                            @*<li class="nav-item"><a class="nav-link" asp-controller="CharacterModels" asp-action="Index">Moje postacie</a></li>*@
+                            <li class="nav-item"><a class="nav-link" asp-controller="CharacterModels" asp-action="Index">Moje postacie</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Ranking" asp-action="Index">Ranking</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Users" asp-action="Index">Społeczność</a></li>
                             @if (User.IsInRole("Administrator") || User.IsInRole("GameMaster"))
                             {
                                 <li class="nav-item"><a class="nav-link" asp-controller="UserApproval" asp-action="Index">Akceptacja</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="CharacterSkills" asp-action="Pending">Zatwierdzanie umiejętności</a></li>
                             }
                         </ul>
                         <div class="gn-actions"><partial name="_LoginPartial" /></div>
