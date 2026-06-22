@@ -44,7 +44,5 @@
    - [ ]    Publiczny leaderboard.​
    - [ ]    Dokumentacja świata gry (regulaminy, fabuła, lore).​
    - [ ]    Samouczki dla nowych graczy i FAQ.​
-   
-   [ ]    Mapy, tabele, materiały graficzne lub PDF.​
-   
-   [ ]    Sekcja pomysłów / propozycji rozgrywki.
+   - [ ]    Mapy, tabele, materiały graficzne lub PDF.​
+   - [ ]    Sekcja pomysłów / propozycji rozgrywki.
