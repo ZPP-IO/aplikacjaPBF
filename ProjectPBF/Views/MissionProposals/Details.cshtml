@@ -1,0 +1,90 @@
+@model ProjectPBF.Models.MissionProposalModel
+@{
+    ViewData["Title"] = Model.Title;
+    var canReview = ViewBag.CanReview == true;
+    var canManage = ViewBag.CanManage == true;
+    var avg = Model.Reviews.Any() ? Model.Reviews.Average(r => r.Score).ToString("0.0") : "—";
+}
+<section class="page-panel">
+    <div class="campaign-details-hero">
+        <div>
+            <span class="eyebrow">@Model.Campaign?.Title</span>
+            <h1>@Model.Title</h1>
+            <p>@Model.Summary</p>
+        </div>
+        <div class="campaign-owner">
+            <span>Status</span>
+            <strong>@Model.Status</strong>
+            <small>Autor: @Model.SubmittedByUser?.Nick</small>
+            <small>Oceny: @Model.Reviews.Count</small>
+            <small>Średnia: @avg</small>
+        </div>
+    </div>
+
+    <div class="details-grid">
+        <div class="gn-panel">
+            <h2>Opis fabularny</h2>
+            <p>@Model.Description</p>
+        </div>
+        <div class="gn-panel">
+            <h2>Założenia mechaniczne</h2>
+            <p><strong>Cel:</strong> @(string.IsNullOrWhiteSpace(Model.Objective) ? "—" : Model.Objective)</p>
+            <p><strong>Nagrody:</strong> @(string.IsNullOrWhiteSpace(Model.SuggestedRewards) ? "—" : Model.SuggestedRewards)</p>
+            <p><strong>Ryzyko:</strong> @(string.IsNullOrWhiteSpace(Model.Risks) ? "—" : Model.Risks)</p>
+        </div>
+    </div>
+
+    <div class="gn-panel mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+            <h2>Oceny werdyktujących</h2>
+            @if (canReview)
+            {
+                <a asp-action="Review" asp-route-id="@Model.Id" class="btn btn-gn-primary">Oceń / wydaj werdykt</a>
+            }
+        </div>
+
+        @if (!Model.Reviews.Any())
+        {
+            <p>Ta misja nie ma jeszcze ocen.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-dark table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Werdyktujący</th>
+                            <th>Ocena</th>
+                            <th>Werdykt</th>
+                            <th>Komentarz</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var review in Model.Reviews.OrderByDescending(r => r.CreatedAt))
+                        {
+                            <tr>
+                                <td>@review.Reviewer?.Nick</td>
+                                <td>@review.Score/10</td>
+                                <td>@review.Decision</td>
+                                <td>@review.Comment</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="d-flex gap-2 mt-3 flex-wrap">
+        <a asp-action="Index" asp-route-campaignId="@Model.CampaignId" class="btn btn-gn-secondary">Wróć do zgłoszeń</a>
+        <a asp-controller="Campaigns" asp-action="Details" asp-route-id="@Model.CampaignId" class="btn btn-gn-secondary">Kampania</a>
+        @if (canManage && Model.Status != ProjectPBF.Models.Enums.MissionProposalStatus.Completed)
+        {
+            <form asp-action="MarkCompleted" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-success">Oznacz jako zakończoną</button>
+            </form>
+        }
+    </div>
+</section>

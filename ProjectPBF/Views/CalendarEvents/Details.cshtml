@@ -1,0 +1,75 @@
+@model ProjectPBF.Models.CalendarEventModel
+@using ProjectPBF.Models.Enums
+@{
+    ViewData["Title"] = Model.Title;
+    var canManage = ViewBag.CanManage == true;
+}
+
+<section class="page-panel narrow-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">@(Model.Visibility == CalendarEventVisibility.Global ? "Wydarzenie globalne" : "Wydarzenie kampanii")</span>
+            <h1>@Model.Title</h1>
+            <p>
+                <strong>@Model.EventDate.ToString("dd.MM.yyyy HH:mm")</strong>
+                @if (Model.EndDate.HasValue)
+                {
+                    <span>– @Model.EndDate.Value.ToString("dd.MM.yyyy HH:mm")</span>
+                }
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a asp-action="Index" class="btn btn-gn-secondary">Kalendarz</a>
+            @if (canManage && !Model.IsCancelled)
+            {
+                <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Anulować to wydarzenie?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Anuluj wydarzenie</button>
+                </form>
+            }
+        </div>
+    </div>
+
+    <div class="details-grid">
+        <div class="gn-panel">
+            <h2>Informacje</h2>
+            <ul class="clean-list">
+                <li><span>📅</span><strong>Data</strong><small>@Model.EventDate.ToString("dd.MM.yyyy HH:mm")</small></li>
+                @if (Model.EndDate.HasValue)
+                {
+                    <li><span>⏱️</span><strong>Koniec</strong><small>@Model.EndDate.Value.ToString("dd.MM.yyyy HH:mm")</small></li>
+                }
+                <li><span>🌍</span><strong>Widoczność</strong><small>@(Model.Visibility == CalendarEventVisibility.Global ? "Globalne" : "Prywatne / kampanijne")</small></li>
+                @if (Model.Campaign != null)
+                {
+                    <li><span>🎲</span><strong>Kampania</strong><small>@Model.Campaign.Title</small></li>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Location))
+                {
+                    <li><span>📍</span><strong>Miejsce</strong><small>@Model.Location</small></li>
+                }
+                <li><span>👤</span><strong>Dodał</strong><small>@Model.CreatedByUser?.Nick</small></li>
+                @if (Model.IsImportant)
+                {
+                    <li><span>⭐</span><strong>Status</strong><small>Ważne wydarzenie</small></li>
+                }
+                @if (Model.IsCancelled)
+                {
+                    <li><span>⛔</span><strong>Status</strong><small>Anulowane</small></li>
+                }
+            </ul>
+        </div>
+
+        <div class="gn-panel">
+            <h2>Opis</h2>
+            @if (!string.IsNullOrWhiteSpace(Model.Description))
+            {
+                <p>@Model.Description</p>
+            }
+            else
+            {
+                <p class="text-muted">Brak opisu.</p>
+            }
+        </div>
+    </div>
+</section>

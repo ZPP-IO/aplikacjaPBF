@@ -24,16 +24,16 @@
    - [X]    System tworzenia kart postaci (statystyki, umiejętności, ekwipunek).​ **[Kamil]**
    - [X]    Formularz zgłaszania umiejętności/techniki postaci do zatwierdzenia przez MG.​ **[Patryk]**
    - [X]    Mechanika rozwoju postaci (doświadczenie, rankingi, PH/Punktów Historii).​ **[Patryk]**
-   - [ ]    Tabele/zasady rozstrzygania konfliktów (np. walki, wydarzenia fabularne)​
-   - [ ]    Możliwość zgłaszania misji/fabuł i oceniania ich przez innych graczy o rolach werdyktujących.
+   - [X]    Tabele/zasady rozstrzygania konfliktów (np. walki, wydarzenia fabularne)​
+   - [X]    Możliwość zgłaszania misji/fabuł i oceniania ich przez innych graczy o rolach werdyktujących.
    - [X]    Mechanizm prywatnych wiadomości między graczami.​ **[Kacper]**
    - [X]    Możliwość oznaczania wątków i postów (np. spoiling, ważne informacje).​ **[Patryk]**
    - [ ]    System zgłaszania postów do moderacji. **[Kacper]**
    - [ ]    Powiadomienia o odpowiedziach w wątkach i wiadomościach prywatnych.​
-   - [ ]    Log aktywności (dodawanie postów, edycje, usuwanie).​**[Daniel]**
+   - [50//50 Dokończ (dodawanie postów, edycje, usuwanie) albo nie chuj wie  ]    Log aktywności (dodawanie postów, edycje, usuwanie).​**[Daniel]**
    - [X]    Rangi i uprawnienia różnych ról (MG, admin, gracz).
-   - [ ]    Kalendarz wydarzeń fabularnych (daty eventów, sesje grupowe).​
-   - [ ]    Mechanizm ogłaszania eventów i działań (np. wojny, misje specjalne).​
+   - [X]   Kalendarz wydarzeń fabularnych (daty eventów, sesje grupowe).​
+   - [X]    Mechanizm ogłaszania eventów i działań (np. wojny, misje specjalne).​
    - [ ]    Logi światowe / wydarzenia historii świata.​
    - [ ]    Zasady wpływu wydarzeń na mechanikę postaci.
    

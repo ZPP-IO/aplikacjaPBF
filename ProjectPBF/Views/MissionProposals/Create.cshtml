@@ -1,0 +1,51 @@
+@model ProjectPBF.Models.MissionProposalModel
+@{
+    var campaign = ViewBag.Campaign as ProjectPBF.Models.CampaignModel;
+    ViewData["Title"] = "Zgłoś misję";
+}
+<section class="page-panel">
+    <div class="gn-panel">
+        <span class="eyebrow">@(campaign?.Title ?? "Kampania")</span>
+        <h1>Zgłoś misję / fabułę do oceny</h1>
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="campaignId" value="@Model.CampaignId" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label class="form-label">Tytuł</label>
+                <input name="title" value="@Model.Title" class="form-control" placeholder="np. Pościg za szpiegiem, Zaginiony artefakt" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Krótki opis</label>
+                <textarea name="summary" class="form-control" rows="3" placeholder="Jedno krótkie streszczenie zgłoszenia.">@Model.Summary</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Opis fabularny</label>
+                <textarea name="description" class="form-control" rows="7" placeholder="Opisz przebieg, klimat i kontekst fabularny.">@Model.Description</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Cel misji</label>
+                <textarea name="objective" class="form-control" rows="3">@Model.Objective</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Proponowane nagrody</label>
+                <textarea name="suggestedRewards" class="form-control" rows="3" placeholder="EXP, PH, itemy, wpływy fabularne itp.">@Model.SuggestedRewards</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Ryzyko / konsekwencje</label>
+                <textarea name="risks" class="form-control" rows="3" placeholder="Co może pójść źle? Jakie są konsekwencje dla postaci lub świata?">@Model.Risks</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-gn-primary">Wyślij do oceny</button>
+            <a asp-controller="Campaigns" asp-action="Details" asp-route-id="@Model.CampaignId" class="btn btn-gn-secondary">Anuluj</a>
+        </form>
+    </div>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -114,6 +114,9 @@ namespace ProjectPBF.Controllers
                 .Include(c => c.Classes)
                 .Include(c => c.ItemTemplates)
                 .Include(c => c.SkillTemplates)
+                .Include(c => c.ConflictRules)
+                .Include(c => c.MissionProposals)
+                .Include(c => c.CalendarEvents)
                 .Include(c => c.CampaignCharacters).ThenInclude(cc => cc.Character)
                 .Include(c => c.Sessions).ThenInclude(s => s.GameMaster)
                 .FirstOrDefaultAsync(c => c.Id == id);

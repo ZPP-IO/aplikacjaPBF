@@ -1,0 +1,104 @@
+@model ProjectPBF.ViewModels.CalendarEventCreateViewModel
+@using ProjectPBF.Models.Enums
+@{
+    ViewData["Title"] = "Dodaj wydarzenie";
+    var canCreateGlobal = ViewBag.CanCreateGlobal == true;
+}
+
+<section class="page-panel narrow-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Kalendarz</span>
+            <h1>Dodaj wydarzenie</h1>
+            <p>Administrator może dodać wydarzenie globalne, a MG może dodać prywatne wydarzenie do swojej kampanii.</p>
+        </div>
+    </div>
+
+    <form asp-action="Create" method="post" class="pbf-form">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Title"></label>
+            <input asp-for="Title" class="form-control" placeholder="np. Premiera GTA 6 / Sesja finałowa / Wojna frakcji" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Description"></label>
+            <textarea asp-for="Description" class="form-control" rows="5" placeholder="Opis wydarzenia, zasady udziału, kontekst fabularny..."></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="details-grid">
+            <div class="form-group mb-3">
+                <label asp-for="EventDate"></label>
+                <input asp-for="EventDate" type="datetime-local" class="form-control" />
+                <span asp-validation-for="EventDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="EndDate"></label>
+                <input asp-for="EndDate" type="datetime-local" class="form-control" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Location"></label>
+            <input asp-for="Location" class="form-control" placeholder="np. Discord, forum, lokacja w świecie gry" />
+            <span asp-validation-for="Location" class="text-danger"></span>
+        </div>
+
+        <div class="details-grid">
+            <div class="form-group mb-3">
+                <label asp-for="Visibility"></label>
+                <select asp-for="Visibility" class="form-control" id="visibilitySelect">
+                    @if (canCreateGlobal)
+                    {
+                        <option value="@((int)CalendarEventVisibility.Global)">Globalne — widoczne dla wszystkich</option>
+                    }
+                    <option value="@((int)CalendarEventVisibility.Campaign)">Prywatne / kampanijne — widoczne dla uczestników kampanii</option>
+                </select>
+                <span asp-validation-for="Visibility" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3" id="campaignSelectBox">
+                <label asp-for="CampaignId"></label>
+                <select asp-for="CampaignId" asp-items="ViewBag.Campaigns" class="form-control">
+                    <option value="">-- wybierz kampanię --</option>
+                </select>
+                <span asp-validation-for="CampaignId" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-check mb-4">
+            <input asp-for="IsImportant" class="form-check-input" />
+            <label asp-for="IsImportant" class="form-check-label"></label>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn btn-gn-primary">Zapisz wydarzenie</button>
+            <a asp-action="Index" class="btn btn-gn-secondary">Anuluj</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const visibility = document.getElementById('visibilitySelect');
+            const campaignBox = document.getElementById('campaignSelectBox');
+            const campaignValue = '@((int)CalendarEventVisibility.Campaign)';
+
+            function refreshCampaignBox() {
+                if (!visibility || !campaignBox) return;
+                campaignBox.style.display = visibility.value === campaignValue ? '' : 'none';
+            }
+
+            visibility?.addEventListener('change', refreshCampaignBox);
+            refreshCampaignBox();
+        })();
+    </script>
+}

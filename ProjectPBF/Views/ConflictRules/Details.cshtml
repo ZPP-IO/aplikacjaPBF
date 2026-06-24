@@ -1,0 +1,98 @@
+@model ProjectPBF.Models.ConflictRuleModel
+@{
+    ViewData["Title"] = Model.Title;
+    var canManage = ViewBag.CanManage == true;
+}
+<section class="page-panel">
+    <div class="campaign-details-hero">
+        <div>
+            <span class="eyebrow">@Model.Campaign?.Title • @Model.Type</span>
+            <h1>@Model.Title</h1>
+            <p>@Model.Description</p>
+            @if (!string.IsNullOrWhiteSpace(Model.Formula))
+            {
+                <p><strong>Wzór / rzut:</strong> @Model.Formula</p>
+            }
+        </div>
+        <div class="campaign-owner">
+            <span>Status</span>
+            <strong>@(Model.IsActive ? "Aktywna" : "Nieaktywna")</strong>
+            <small>Autor: @Model.CreatedByUser?.Nick</small>
+            <small>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Example))
+    {
+        <div class="gn-panel mb-3">
+            <h2>Przykład użycia</h2>
+            <p>@Model.Example</p>
+        </div>
+    }
+
+    <div class="gn-panel">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2>Tabela wyników</h2>
+            @if (canManage)
+            {
+                <a asp-action="AddRow" asp-route-id="@Model.Id" class="btn btn-gn-primary">+ Dodaj wiersz</a>
+            }
+        </div>
+
+        @if (!Model.Rows.Any())
+        {
+            <p>Brak wierszy tabeli. Możesz używać samego opisu zasady albo dodać zakresy wyników.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-dark table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Zakres</th>
+                            <th>Wynik</th>
+                            <th>Efekt</th>
+                            @if (canManage)
+                            {
+                                <th></th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Rows)
+                        {
+                            <tr>
+                                <td>@(row.MinValue?.ToString() ?? "-") – @(row.MaxValue?.ToString() ?? "-")</td>
+                                <td><strong>@row.Outcome</strong></td>
+                                <td>@row.Effect</td>
+                                @if (canManage)
+                                {
+                                    <td class="text-end">
+                                        <form asp-action="DeleteRow" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@row.Id" />
+                                            <button class="btn btn-sm btn-danger" type="submit">Usuń</button>
+                                        </form>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="d-flex gap-2 mt-3 flex-wrap">
+        <a asp-action="Index" asp-route-campaignId="@Model.CampaignId" class="btn btn-gn-secondary">Wróć do zasad</a>
+        <a asp-controller="Campaigns" asp-action="Details" asp-route-id="@Model.CampaignId" class="btn btn-gn-secondary">Kampania</a>
+        @if (canManage)
+        {
+            <form asp-action="ToggleActive" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-warning">@(Model.IsActive ? "Wyłącz zasadę" : "Włącz zasadę")</button>
+            </form>
+        }
+    </div>
+</section>

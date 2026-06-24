@@ -1,0 +1,47 @@
+@model ProjectPBF.Models.ConflictRuleModel
+@using ProjectPBF.Models.Enums
+@{
+    var campaign = ViewBag.Campaign as ProjectPBF.Models.CampaignModel;
+    ViewData["Title"] = "Nowa zasada konfliktu";
+}
+<section class="page-panel">
+    <div class="gn-panel">
+        <span class="eyebrow">@(campaign?.Title ?? "Kampania")</span>
+        <h1>Dodaj tabelę / zasadę konfliktu</h1>
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="campaignId" value="@Model.CampaignId" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label class="form-label">Nazwa zasady</label>
+                <input name="title" value="@Model.Title" class="form-control" placeholder="np. Walka wręcz, Test perswazji, Ucieczka z pościgu" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Typ konfliktu</label>
+                <select name="type" class="form-select" asp-items="Html.GetEnumSelectList<ConflictRuleType>()"></select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Opis zasady</label>
+                <textarea name="description" class="form-control" rows="6" placeholder="Opisz, kiedy używa się tej zasady i jak MG/gracze rozstrzygają sytuację.">@Model.Description</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Wzór / rzut</label>
+                <input name="formula" value="@Model.Formula" class="form-control" placeholder="np. k20 + statystyka + skill vs próg trudności" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Przykład użycia</label>
+                <textarea name="example" class="form-control" rows="4">@Model.Example</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-gn-primary">Zapisz zasadę</button>
+            <a asp-controller="Campaigns" asp-action="Details" asp-route-id="@Model.CampaignId" class="btn btn-gn-secondary">Anuluj</a>
+        </form>
+    </div>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

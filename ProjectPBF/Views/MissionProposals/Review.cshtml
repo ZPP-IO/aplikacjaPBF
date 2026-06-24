@@ -1,0 +1,58 @@
+@model ProjectPBF.Models.MissionProposalModel
+@using ProjectPBF.Models.Enums
+@{
+    ViewData["Title"] = "Ocena misji";
+    var existing = ViewBag.ExistingReview as ProjectPBF.Models.MissionReviewModel;
+}
+<section class="page-panel">
+    <div class="campaign-details-hero">
+        <div>
+            <span class="eyebrow">Werdykt</span>
+            <h1>@Model.Title</h1>
+            <p>@Model.Summary</p>
+        </div>
+        <div class="campaign-owner">
+            <span>Status</span>
+            <strong>@Model.Status</strong>
+            <small>Autor: @Model.SubmittedByUser?.Nick</small>
+            <small>Oceny: @Model.Reviews.Count</small>
+        </div>
+    </div>
+
+    <div class="details-grid">
+        <div class="gn-panel">
+            <h2>Opis zgłoszenia</h2>
+            <p>@Model.Description</p>
+            <p><strong>Cel:</strong> @(string.IsNullOrWhiteSpace(Model.Objective) ? "—" : Model.Objective)</p>
+            <p><strong>Nagrody:</strong> @(string.IsNullOrWhiteSpace(Model.SuggestedRewards) ? "—" : Model.SuggestedRewards)</p>
+            <p><strong>Ryzyko:</strong> @(string.IsNullOrWhiteSpace(Model.Risks) ? "—" : Model.Risks)</p>
+        </div>
+        <div class="gn-panel">
+            <h2>Twoja ocena</h2>
+            <form asp-action="Review" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label class="form-label">Ocena 1–10</label>
+                    <input name="score" type="number" min="1" max="10" value="@(existing?.Score ?? 5)" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Werdykt</label>
+                    <select name="decision" class="form-select" asp-items="Html.GetEnumSelectList<MissionReviewDecision>()"></select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Komentarz</label>
+                    <textarea name="comment" class="form-control" rows="6" placeholder="Uzasadnij werdykt, wskaż poprawki albo warunki akceptacji.">@(existing?.Comment)</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-gn-primary">Zapisz werdykt</button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-gn-secondary">Anuluj</a>
+            </form>
+        </div>
+    </div>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

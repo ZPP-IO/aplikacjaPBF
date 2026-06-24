@@ -80,6 +80,58 @@
             }
         </div>
 
+
+
+        <div class="gn-panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2>Zasady konfliktów</h2>
+                <a asp-controller="ConflictRules" asp-action="Index" asp-route-campaignId="@Model.Id" class="btn btn-gn-secondary">Otwórz zasady</a>
+            </div>
+            <p class="text-muted">Tabele i zasady rozstrzygania walk, testów oraz wydarzeń fabularnych.</p>
+            <div class="stat-chip-grid mb-3">
+                <span class="stat-chip">⚔️ Zasady: <small>@Model.ConflictRules.Count</small></span>
+                <span class="stat-chip">✅ Aktywne: <small>@Model.ConflictRules.Count(r => r.IsActive)</small></span>
+            </div>
+            @if (canManageCampaign)
+            {
+                <a asp-controller="ConflictRules" asp-action="Create" asp-route-campaignId="@Model.Id" class="btn btn-sm btn-success">+ Dodaj zasadę / tabelę</a>
+            }
+        </div>
+
+
+
+        <div class="gn-panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2>Kalendarz kampanii</h2>
+                <a asp-controller="CalendarEvents" asp-action="Index" asp-route-scope="private" class="btn btn-gn-secondary">Otwórz kalendarz</a>
+            </div>
+            <p class="text-muted">Prywatne wydarzenia kampanii, sesje grupowe, terminy eventów i ważne daty fabularne.</p>
+            <div class="stat-chip-grid mb-3">
+                <span class="stat-chip">📅 Wydarzenia: <small>@Model.CalendarEvents.Count</small></span>
+                <span class="stat-chip">⏳ Nadchodzące: <small>@Model.CalendarEvents.Count(e => !e.IsCancelled && e.EventDate >= DateTime.Now)</small></span>
+            </div>
+            @if (canManageCampaign)
+            {
+                <a asp-controller="CalendarEvents" asp-action="Create" asp-route-campaignId="@Model.Id" class="btn btn-sm btn-success">+ Dodaj wydarzenie</a>
+            }
+        </div>
+
+        <div class="gn-panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2>Misje i fabuły</h2>
+                <a asp-controller="MissionProposals" asp-action="Index" asp-route-campaignId="@Model.Id" class="btn btn-gn-secondary">Otwórz zgłoszenia</a>
+            </div>
+            <p class="text-muted">Gracze mogą zgłaszać misje lub fabuły, a MG/osoby werdyktujące mogą je oceniać.</p>
+            <div class="stat-chip-grid mb-3">
+                <span class="stat-chip">📜 Zgłoszenia: <small>@Model.MissionProposals.Count</small></span>
+                <span class="stat-chip">⏳ Oczekujące: <small>@Model.MissionProposals.Count(m => m.Status == ProjectPBF.Models.Enums.MissionProposalStatus.Pending || m.Status == ProjectPBF.Models.Enums.MissionProposalStatus.InReview)</small></span>
+            </div>
+            @if (isCampaignMember)
+            {
+                <a asp-controller="MissionProposals" asp-action="Create" asp-route-campaignId="@Model.Id" class="btn btn-sm btn-success">+ Zgłoś misję / fabułę</a>
+            }
+        </div>
+
         <div class="gn-panel">
             <h2>Uczestnicy</h2>
             @if (Model.Members.Any())

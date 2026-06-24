@@ -1,0 +1,85 @@
+@model ProjectPBF.ViewModels.CalendarEventsIndexViewModel
+@{
+    ViewData["Title"] = "Kalendarz wydarzeń fabularnych";
+}
+
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Kalendarz wydarzeń fabularnych</span>
+            <h1>Daty eventów, sesje grupowe i wydarzenia świata</h1>
+            <p>Tu widać wszystkie dostępne dla Ciebie wydarzenia: globalne ogłoszenia administratora, wydarzenia kampanii oraz sesje, w których bierzesz udział.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            @if (Model.CanCreateEvents)
+            {
+                <a asp-action="Create" class="btn btn-gn-primary">+ Dodaj wydarzenie</a>
+            }
+            <a asp-controller="Home" asp-action="Index" class="btn btn-gn-secondary">Strona główna</a>
+        </div>
+    </div>
+
+    <div class="calendar-filter-row">
+        <a asp-action="Index" asp-route-scope="all" class="btn @(Model.Scope == "all" ? "btn-gn-primary" : "btn-gn-secondary")">Wszystkie</a>
+        <a asp-action="Index" asp-route-scope="global" class="btn @(Model.Scope == "global" ? "btn-gn-primary" : "btn-gn-secondary")">Globalne</a>
+        <a asp-action="Index" asp-route-scope="private" class="btn @(Model.Scope == "private" ? "btn-gn-primary" : "btn-gn-secondary")">Prywatne / kampanie</a>
+    </div>
+
+    @if (Model.Events.Any())
+    {
+        <div class="calendar-list">
+            @foreach (var item in Model.Events)
+            {
+                var isPast = item.StartAt < DateTime.Now;
+                <article class="calendar-event-row @(isPast ? "calendar-event-past" : "")">
+                    <div class="calendar-event-date">
+                        <strong>@item.StartAt.ToString("dd")</strong>
+                        <span>@item.StartAt.ToString("MM.yyyy")</span>
+                    </div>
+                    <div class="calendar-event-main">
+                        <div class="d-flex gap-2 flex-wrap align-items-center mb-1">
+                            <span class="badge bg-secondary">@item.TypeLabel</span>
+                            @if (item.IsImportant)
+                            {
+                                <span class="badge bg-warning text-dark">ważne</span>
+                            }
+                            @if (isPast)
+                            {
+                                <span class="badge bg-dark">archiwalne</span>
+                            }
+                        </div>
+                        <h2>
+                            <a asp-controller="@item.Controller" asp-action="@item.Action" asp-route-id="@item.Id">@item.Title</a>
+                        </h2>
+                        <p>
+                            <strong>@item.StartAt.ToString("dd.MM.yyyy HH:mm")</strong>
+                            @if (item.EndAt.HasValue)
+                            {
+                                <span>– @item.EndAt.Value.ToString("dd.MM.yyyy HH:mm")</span>
+                            }
+                        </p>
+                        @if (!string.IsNullOrWhiteSpace(item.CampaignTitle))
+                        {
+                            <p class="text-muted mb-1">Kampania: @item.CampaignTitle</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.Location))
+                        {
+                            <p class="text-muted mb-1">Miejsce: @item.Location</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                        {
+                            <p class="mb-0">@item.Description</p>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <h2>Brak wydarzeń</h2>
+            <p>Nie ma jeszcze wydarzeń pasujących do wybranego widoku.</p>
+        </div>
+    }
+</section>

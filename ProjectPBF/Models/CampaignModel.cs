@@ -37,6 +37,9 @@ namespace ProjectPBF.Models
         public ICollection<CampaignClassModel> Classes { get; set; } = new List<CampaignClassModel>();
         public ICollection<CampaignItemTemplateModel> ItemTemplates { get; set; } = new List<CampaignItemTemplateModel>();
         public ICollection<CampaignSkillTemplateModel> SkillTemplates { get; set; } = new List<CampaignSkillTemplateModel>();
+        public ICollection<ConflictRuleModel> ConflictRules { get; set; } = new List<ConflictRuleModel>();
+        public ICollection<MissionProposalModel> MissionProposals { get; set; } = new List<MissionProposalModel>();
+        public ICollection<CalendarEventModel> CalendarEvents { get; set; } = new List<CalendarEventModel>();
 
         // Nowa kolekcja: sesje należące do kampanii
         public ICollection<SessionModel> Sessions { get; set; } = new List<SessionModel>();

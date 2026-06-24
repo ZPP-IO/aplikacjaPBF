@@ -25,6 +25,11 @@ namespace ProjectPBF.Data
         public DbSet<CampaignClassModel> CampaignClasses { get; set; } = null!;
         public DbSet<CampaignItemTemplateModel> CampaignItemTemplates { get; set; } = null!;
         public DbSet<CampaignSkillTemplateModel> CampaignSkillTemplates { get; set; } = null!;
+        public DbSet<ConflictRuleModel> ConflictRules { get; set; } = null!;
+        public DbSet<ConflictRuleRowModel> ConflictRuleRows { get; set; } = null!;
+        public DbSet<MissionProposalModel> MissionProposals { get; set; } = null!;
+        public DbSet<MissionReviewModel> MissionReviews { get; set; } = null!;
+        public DbSet<CalendarEventModel> CalendarEvents { get; set; } = null!;
 
         // Nowe DbSety sesji i forum
         public DbSet<SessionModel> SessionModels { get; set; } = null!;
@@ -305,6 +310,119 @@ namespace ProjectPBF.Data
                     .HasForeignKey(x => x.CampaignId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
+
+            builder.Entity<ConflictRuleModel>(entity =>
+            {
+                entity.Property(x => x.Title).IsRequired().HasMaxLength(150);
+                entity.Property(x => x.Description).IsRequired().HasMaxLength(6000);
+                entity.Property(x => x.Formula).HasMaxLength(1000);
+                entity.Property(x => x.Example).HasMaxLength(3000);
+                entity.Property(x => x.Type).HasConversion<int>();
+                entity.Property(x => x.IsActive).HasDefaultValue(true);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.HasIndex(x => x.CampaignId);
+                entity.HasIndex(x => x.Type);
+                entity.HasIndex(x => x.IsActive);
+
+                entity.HasOne(x => x.Campaign)
+                    .WithMany(x => x.ConflictRules)
+                    .HasForeignKey(x => x.CampaignId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.CreatedByUser)
+                    .WithMany()
+                    .HasForeignKey(x => x.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<ConflictRuleRowModel>(entity =>
+            {
+                entity.Property(x => x.Outcome).IsRequired().HasMaxLength(200);
+                entity.Property(x => x.Effect).HasMaxLength(3000);
+                entity.Property(x => x.Order).HasDefaultValue(0);
+                entity.HasIndex(x => x.ConflictRuleId);
+                entity.HasIndex(x => new { x.ConflictRuleId, x.Order });
+
+                entity.HasOne(x => x.ConflictRule)
+                    .WithMany(x => x.Rows)
+                    .HasForeignKey(x => x.ConflictRuleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<MissionProposalModel>(entity =>
+            {
+                entity.Property(x => x.Title).IsRequired().HasMaxLength(150);
+                entity.Property(x => x.Summary).IsRequired().HasMaxLength(1000);
+                entity.Property(x => x.Description).IsRequired().HasMaxLength(8000);
+                entity.Property(x => x.Objective).HasMaxLength(3000);
+                entity.Property(x => x.SuggestedRewards).HasMaxLength(3000);
+                entity.Property(x => x.Risks).HasMaxLength(3000);
+                entity.Property(x => x.Status).HasConversion<int>().HasDefaultValue(MissionProposalStatus.Pending);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.HasIndex(x => x.CampaignId);
+                entity.HasIndex(x => x.Status);
+                entity.HasIndex(x => x.SubmittedByUserId);
+
+                entity.HasOne(x => x.Campaign)
+                    .WithMany(x => x.MissionProposals)
+                    .HasForeignKey(x => x.CampaignId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.SubmittedByUser)
+                    .WithMany()
+                    .HasForeignKey(x => x.SubmittedByUserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<MissionReviewModel>(entity =>
+            {
+                entity.Property(x => x.Score).HasDefaultValue(5);
+                entity.Property(x => x.Decision).HasConversion<int>();
+                entity.Property(x => x.Comment).IsRequired().HasMaxLength(3000);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.HasIndex(x => x.MissionProposalId);
+                entity.HasIndex(x => x.ReviewerId);
+                entity.HasIndex(x => new { x.MissionProposalId, x.ReviewerId }).IsUnique();
+
+                entity.HasOne(x => x.MissionProposal)
+                    .WithMany(x => x.Reviews)
+                    .HasForeignKey(x => x.MissionProposalId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.Reviewer)
+                    .WithMany()
+                    .HasForeignKey(x => x.ReviewerId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+
+
+            builder.Entity<CalendarEventModel>(entity =>
+            {
+                entity.Property(x => x.Title).IsRequired().HasMaxLength(150);
+                entity.Property(x => x.Description).HasMaxLength(4000);
+                entity.Property(x => x.Location).HasMaxLength(150);
+                entity.Property(x => x.Visibility).HasConversion<int>().HasDefaultValue(CalendarEventVisibility.Campaign);
+                entity.Property(x => x.IsImportant).HasDefaultValue(false);
+                entity.Property(x => x.IsCancelled).HasDefaultValue(false);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.HasIndex(x => x.EventDate);
+                entity.HasIndex(x => x.Visibility);
+                entity.HasIndex(x => x.CampaignId);
+                entity.HasIndex(x => x.CreatedByUserId);
+
+                entity.HasOne(x => x.Campaign)
+                    .WithMany(x => x.CalendarEvents)
+                    .HasForeignKey(x => x.CampaignId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.CreatedByUser)
+                    .WithMany()
+                    .HasForeignKey(x => x.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+
 
             builder.Entity<SessionModel>(entity =>
             {

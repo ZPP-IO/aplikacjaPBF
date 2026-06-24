@@ -1,4 +1,7 @@
-@{ ViewData["Title"] = "Strona główna"; }
+@model ProjectPBF.ViewModels.HomeDashboardViewModel
+@{
+    ViewData["Title"] = "Strona główna";
+}
 <section class="gn-dashboard">
     <div class="gn-left">
         <section class="hero-panel">
@@ -12,10 +15,26 @@
                 </div>
             </div>
         </section>
+
+        <section class="calendar-top-panel">
+            <div>
+                <span class="eyebrow">Kalendarz wydarzeń fabularnych</span>
+                <h2>Daty eventów, sesje grupowe i wydarzenia świata</h2>
+                <p>W kalendarzu są wszystkie wydarzenia: globalne dodane przez administratora oraz prywatne wydarzenia kampanii i sesje, w których bierzesz udział.</p>
+            </div>
+            <div class="calendar-top-actions">
+                <a asp-controller="CalendarEvents" asp-action="Index" class="btn btn-gn-primary">Otwórz kalendarz</a>
+                @if (User.IsInRole("Administrator") || User.IsInRole("GameMaster"))
+                {
+                    <a asp-controller="CalendarEvents" asp-action="Create" class="btn btn-gn-secondary">+ Dodaj wydarzenie</a>
+                }
+            </div>
+        </section>
+
         <section class="category-grid">
             <a class="category-card" asp-controller="CharacterModels" asp-action="Index"><span class="card-icon">🛡️</span><div><h3>Moje postacie</h3><p>Twórz bohaterów, avatary i ogólne opisy postaci.</p></div></a>
             <a class="category-card" asp-controller="Campaigns" asp-action="Browse"><span class="card-icon">🎲</span><div><h3>Kampanie RPG</h3><p>Każda sesja ma własne statystyki i punkty do rozdania.</p></div></a>
-            <a class="category-card" asp-controller="Users" asp-action="Index"><span class="card-icon">🧙</span><div><h3>Społeczność</h3><p>Znajdź graczy, MG i osoby do wspólnej rozgrywki.</p></div></a>
+            <a class="category-card" asp-controller="CalendarEvents" asp-action="Index"><span class="card-icon">📅</span><div><h3>Kalendarz</h3><p>Globalne wydarzenia świata, prywatne sesje i eventy kampanii.</p></div></a>
         </section>
         <section class="bottom-panels">
             <div class="gn-panel"><h2>Jak działa kampania?</h2><div class="mini-list"><div><span class="pin">📜</span><strong>MG tworzy sesję</strong><small>ustawia opis i zasady</small></div><div><span class="pin">🎲</span><strong>Wybiera statystyki</strong><small>np. Siła, Mana, Refleks</small></div><div><span class="pin">✨</span><strong>Daje pulę punktów</strong><small>np. 20 punktów do rozdania</small></div></div></div>
@@ -24,6 +43,57 @@
     </div>
     <aside class="gn-sidebar">
         <div class="side-panel"><h3>Ostatnia aktywność</h3><ul class="activity-list"><li><span>⚔️</span><div><strong>Nowa postać</strong><small>Gracz utworzył bohatera</small></div></li><li><span>📜</span><div><strong>Opis kampanii</strong><small>MG dopisał założenia sesji</small></div></li><li><span>👥</span><div><strong>Społeczność</strong><small>Nowi gracze oczekują na akceptację</small></div></li></ul></div>
-        <div class="side-panel"><h3>Nadchodzące sesje</h3><div class="event-card"><span class="event-date">20</span><div><strong>Rozdanie punktów</strong><small>Start postaci w kampanii</small></div></div><div class="event-card"><span class="event-date">D20</span><div><strong>Rekrutacja graczy</strong><small>Nowe kampanie PBF</small></div></div></div>
+        <div class="side-panel">
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                <h3 class="mb-0">Nadchodzące wydarzenia</h3>
+                <a asp-controller="CalendarEvents" asp-action="Index" class="small">pełny kalendarz →</a>
+            </div>
+
+            <span class="eyebrow">Globalne</span>
+            @if (Model.UpcomingGlobalEvents.Any())
+            {
+                foreach (var item in Model.UpcomingGlobalEvents)
+                {
+                    <a class="event-card event-card-link" asp-controller="@item.Controller" asp-action="@item.Action" asp-route-id="@item.Id">
+                        <span class="event-date">@item.DateBadge</span>
+                        <div>
+                            <strong>@item.Title</strong>
+                            <small>@item.StartAt.ToString("dd.MM.yyyy HH:mm")</small>
+                        </div>
+                    </a>
+                }
+            }
+            else
+            {
+                <p class="text-muted small mb-3">Brak zaplanowanych wydarzeń globalnych.</p>
+            }
+
+            <span class="eyebrow">Moje prywatne / sesje</span>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                if (Model.UpcomingPrivateEvents.Any())
+                {
+                    foreach (var item in Model.UpcomingPrivateEvents)
+                    {
+                        <a class="event-card event-card-link" asp-controller="@item.Controller" asp-action="@item.Action" asp-route-id="@item.Id">
+                            <span class="event-date">@item.DateBadge</span>
+                            <div>
+                                <strong>@item.Title</strong>
+                                <small>@(string.IsNullOrWhiteSpace(item.CampaignTitle) ? item.TypeLabel : item.CampaignTitle)</small>
+                                <small>@item.StartAt.ToString("dd.MM.yyyy HH:mm")</small>
+                            </div>
+                        </a>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">Nie masz najbliższych prywatnych wydarzeń ani zaakceptowanych sesji.</p>
+                }
+            }
+            else
+            {
+                <p class="text-muted small mb-0">Zaloguj się, żeby zobaczyć prywatne wydarzenia i sesje.</p>
+            }
+        </div>
     </aside>
 </section>

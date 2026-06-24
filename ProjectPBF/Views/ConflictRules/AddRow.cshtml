@@ -1,0 +1,46 @@
+@model ProjectPBF.Models.ConflictRuleRowModel
+@{
+    var rule = ViewBag.Rule as ProjectPBF.Models.ConflictRuleModel;
+    ViewData["Title"] = "Dodaj wiersz tabeli";
+}
+<section class="page-panel">
+    <div class="gn-panel">
+        <span class="eyebrow">@(rule?.Title ?? "Tabela")</span>
+        <h1>Dodaj wiersz tabeli wyników</h1>
+        <form asp-action="AddRow" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="conflictRuleId" value="@Model.ConflictRuleId" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Minimum</label>
+                    <input name="minValue" value="@Model.MinValue" type="number" class="form-control" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Maksimum</label>
+                    <input name="maxValue" value="@Model.MaxValue" type="number" class="form-control" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Kolejność</label>
+                    <input name="order" value="@Model.Order" type="number" class="form-control" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Wynik</label>
+                <input name="outcome" value="@Model.Outcome" class="form-control" placeholder="np. Sukces, Porażka, Krytyczny sukces" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Efekt</label>
+                <textarea name="effect" class="form-control" rows="5" placeholder="np. Obrażenia, konsekwencje fabularne, dodatkowy koszt.">@Model.Effect</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-gn-primary">Dodaj wiersz</button>
+            <a asp-action="Details" asp-route-id="@Model.ConflictRuleId" class="btn btn-gn-secondary">Anuluj</a>
+        </form>
+    </div>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

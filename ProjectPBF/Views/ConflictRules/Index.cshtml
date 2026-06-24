@@ -1,0 +1,48 @@
+@model IEnumerable<ProjectPBF.Models.ConflictRuleModel>
+@{
+    ViewData["Title"] = "Zasady konfliktów";
+    var campaignId = ViewBag.CampaignId as int?;
+}
+<section class="page-panel">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <span class="eyebrow">Mechanika</span>
+            <h1>Tabele i zasady rozstrzygania konfliktów</h1>
+            <p class="text-muted">Zasady walki, testów, wydarzeń fabularnych i innych konfliktów w kampaniach.</p>
+        </div>
+        @if (campaignId.HasValue)
+        {
+            <a asp-action="Create" asp-route-campaignId="@campaignId.Value" class="btn btn-gn-primary">+ Dodaj zasadę</a>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="gn-panel"><p>Brak dodanych zasad konfliktów.</p></div>
+    }
+    else
+    {
+        <div class="details-grid">
+            @foreach (var rule in Model)
+            {
+                <div class="gn-panel">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <div>
+                            <span class="eyebrow">@rule.Campaign?.Title</span>
+                            <h2>@rule.Title</h2>
+                        </div>
+                        <span class="badge @(rule.IsActive ? "bg-success" : "bg-secondary")">@(rule.IsActive ? "Aktywna" : "Nieaktywna")</span>
+                    </div>
+                    <p class="text-muted">Typ: <strong>@rule.Type</strong></p>
+                    @if (!string.IsNullOrWhiteSpace(rule.Formula))
+                    {
+                        <p><strong>Rzut / wzór:</strong> @rule.Formula</p>
+                    }
+                    <p>@(rule.Description.Length > 220 ? rule.Description.Substring(0, 220) + "..." : rule.Description)</p>
+                    <p class="text-muted">Pozycji w tabeli: @rule.Rows.Count</p>
+                    <a asp-action="Details" asp-route-id="@rule.Id" class="btn btn-gn-secondary">Szczegóły</a>
+                </div>
+            }
+        </div>
+    }
+</section>
