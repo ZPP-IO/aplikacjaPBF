@@ -30,7 +30,7 @@
    - [X]    Możliwość oznaczania wątków i postów (np. spoiling, ważne informacje).​ **[Patryk]**
    - [ ]    System zgłaszania postów do moderacji. **[Kacper]**
    - [ ]    Powiadomienia o odpowiedziach w wątkach i wiadomościach prywatnych.​
-   - [ ]    Log aktywności (dodawanie postów, edycje, usuwanie).​
+   - [ ]    Log aktywności (dodawanie postów, edycje, usuwanie).​**[Daniel]**
    - [X]    Rangi i uprawnienia różnych ról (MG, admin, gracz).
    - [ ]    Kalendarz wydarzeń fabularnych (daty eventów, sesje grupowe).​
    - [ ]    Mechanizm ogłaszania eventów i działań (np. wojny, misje specjalne).​
