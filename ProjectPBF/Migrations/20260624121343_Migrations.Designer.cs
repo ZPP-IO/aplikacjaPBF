@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectPBF.Data;
 
@@ -11,9 +12,11 @@ using ProjectPBF.Data;
 namespace ProjectPBF.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260624121343_Migrations")]
+    partial class Migrations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -157,59 +160,6 @@ namespace ProjectPBF.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.ActivityLogModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ActionType")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CampaignId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CharacterId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<int?>("EntityId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("EntityType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActionType");
-
-                    b.HasIndex("CampaignId");
-
-                    b.HasIndex("CharacterId");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ActivityLogs");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.CampaignCharacterModel", b =>
@@ -1356,30 +1306,6 @@ namespace ProjectPBF.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ProjectPBF.Models.ActivityLogModel", b =>
-                {
-                    b.HasOne("ProjectPBF.Models.CampaignModel", "Campaign")
-                        .WithMany("ActivityLogs")
-                        .HasForeignKey("CampaignId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("ProjectPBF.Models.CharacterModel", "Character")
-                        .WithMany("ActivityLogs")
-                        .HasForeignKey("CharacterId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("ProjectPBF.Models.UserModel", "User")
-                        .WithMany("ActivityLogs")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("Campaign");
-
-                    b.Navigation("Character");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("ProjectPBF.Models.CampaignCharacterModel", b =>
                 {
                     b.HasOne("ProjectPBF.Models.CampaignModel", "Campaign")
@@ -1716,8 +1642,6 @@ namespace ProjectPBF.Migrations
 
             modelBuilder.Entity("ProjectPBF.Models.CampaignModel", b =>
                 {
-                    b.Navigation("ActivityLogs");
-
                     b.Navigation("CampaignCharacters");
 
                     b.Navigation("Classes");
@@ -1735,8 +1659,6 @@ namespace ProjectPBF.Migrations
 
             modelBuilder.Entity("ProjectPBF.Models.CharacterModel", b =>
                 {
-                    b.Navigation("ActivityLogs");
-
                     b.Navigation("CampaignCharacters");
 
                     b.Navigation("DevelopmentLogs");
@@ -1782,8 +1704,6 @@ namespace ProjectPBF.Migrations
 
             modelBuilder.Entity("ProjectPBF.Models.UserModel", b =>
                 {
-                    b.Navigation("ActivityLogs");
-
                     b.Navigation("CampaignMemberships");
 
                     b.Navigation("Characters");

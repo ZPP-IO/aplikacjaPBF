@@ -1,0 +1,196 @@
+@model IEnumerable<ProjectPBF.Models.ActivityLogModel>
+
+@{
+    ViewData["Title"] = "Log aktywności";
+
+    string GetActionBadgeClass(object? actionType)
+    {
+        var action = actionType?.ToString()?.ToLower() ?? "";
+
+        return action switch
+        {
+            "created" => "bg-success-subtle text-success border border-success-subtle",
+            "updated" => "bg-warning-subtle text-warning border border-warning-subtle",
+            "edited" => "bg-warning-subtle text-warning border border-warning-subtle",
+            "deleted" => "bg-danger-subtle text-danger border border-danger-subtle",
+            _ => "bg-info-subtle text-info border border-info-subtle"
+        };
+    }
+}
+
+<style>
+    .activity-shell {
+        max-width: 1800px;
+        margin: 0 auto;
+        padding: 2rem 2rem 3rem 2rem;
+    }
+
+    .activity-panel {
+        background: linear-gradient(135deg, rgba(18, 30, 58, 0.95), rgba(5, 12, 28, 0.96));
+        border: 1px solid rgba(255, 208, 117, 0.18);
+        border-radius: 28px;
+        padding: 2rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    .activity-eyebrow {
+        color: #39c7ff;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        font-weight: 800;
+        font-size: .95rem;
+        margin-bottom: .5rem;
+    }
+
+    .activity-title {
+        color: #f3df9b;
+        font-weight: 900;
+        font-size: clamp(2rem, 4vw, 3.6rem);
+        line-height: 1;
+        margin-bottom: .8rem;
+        text-transform: uppercase;
+    }
+
+    .activity-subtitle {
+        color: #f3f0e6;
+        font-size: 1.15rem;
+        margin-bottom: 2rem;
+    }
+
+    .activity-table-wrap {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255, 208, 117, 0.12);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .activity-table {
+        margin-bottom: 0;
+        color: #f5f1e8;
+        vertical-align: middle;
+    }
+
+    .activity-table thead th {
+        background: rgba(255,255,255,0.06);
+        color: #ffffff;
+        font-weight: 700;
+        border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+        white-space: nowrap;
+    }
+
+    .activity-table td {
+        border-color: rgba(255,255,255,0.08) !important;
+        color: #e9e3d5;
+    }
+
+    .activity-table tbody tr {
+        transition: background .15s ease-in-out;
+    }
+
+    .activity-table tbody tr:hover {
+        background: rgba(255,255,255,0.04);
+    }
+
+    .activity-muted {
+        color: #aeb8cb;
+    }
+
+    .activity-empty {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #f3f0e6;
+    }
+
+    .activity-empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .activity-empty-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: .5rem;
+        color: #f3f0e6;
+    }
+
+    .activity-empty-text {
+        color: #d5dcec;
+        font-size: 1.05rem;
+    }
+
+    .activity-description {
+        max-width: 520px;
+        word-break: break-word;
+    }
+
+    .activity-small {
+        font-size: .92rem;
+    }
+</style>
+
+<div class="activity-shell">
+    <div class="activity-panel">
+        <div class="activity-eyebrow">Panel administracyjny</div>
+        <h1 class="activity-title">Log aktywności</h1>
+        <p class="activity-subtitle">
+            Historia działań użytkowników w systemie: tworzenie, edycja i usuwanie danych.
+        </p>
+
+        @if (!Model.Any())
+        {
+            <div class="activity-empty">
+                <div class="activity-empty-icon">🧾</div>
+                <div class="activity-empty-title">Brak wpisów</div>
+                <div class="activity-empty-text">
+                    Nie ma jeszcze żadnych zapisanych zdarzeń w logu aktywności.
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="activity-table-wrap">
+                <div class="table-responsive">
+                    <table class="table activity-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Użytkownik</th>
+                                <th>Akcja</th>
+                                <th>Typ encji</th>
+                                <th>ID encji</th>
+                                <th>Opis</th>
+                                <th>Kampania</th>
+                                <th>Postać</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model)
+                            {
+                                <tr>
+                                    <td class="activity-small">
+                                        @log.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                    </td>
+                                    <td>
+                                        <strong>@(log.User?.Nick ?? "Brak")</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill @GetActionBadgeClass(log.ActionType)">
+                                            @log.ActionType
+                                        </span>
+                                    </td>
+                                    <td>@log.EntityType</td>
+                                    <td>@(log.EntityId?.ToString() ?? "-")</td>
+                                    <td class="activity-description">
+                                        @(string.IsNullOrWhiteSpace(log.Description) ? "-" : log.Description)
+                                    </td>
+                                    <td>@(log.Campaign?.Title ?? "-")</td>
+                                    <td>@(log.Character?.Name ?? "-")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectPBF.Data;
 using ProjectPBF.Models;
 using ProjectPBF.Models.Enums;
+using ProjectPBF.Services;
 using ProjectPBF.ViewModels;
 
 namespace ProjectPBF.Controllers
@@ -15,11 +16,16 @@ namespace ProjectPBF.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<UserModel> _userManager;
+        private readonly ActivityLogService _activityLogService;
 
-        public CharacterModelsController(ApplicationDbContext context, UserManager<UserModel> userManager)
+        public CharacterModelsController(
+            ApplicationDbContext context,
+            UserManager<UserModel> userManager,
+            ActivityLogService activityLogService)
         {
             _context = context;
             _userManager = userManager;
+            _activityLogService = activityLogService;
         }
 
         public async Task<IActionResult> Index()
@@ -139,6 +145,16 @@ namespace ProjectPBF.Controllers
             {
                 _context.Add(characterModel);
                 await _context.SaveChangesAsync();
+
+                await _activityLogService.LogAsync(
+                    currentUser.Id,
+                    ActivityActionType.Created,
+                    "Character",
+                    characterModel.Id,
+                    $"Utworzono postać: {characterModel.Name}",
+                    characterId: characterModel.Id
+                );
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -305,6 +321,17 @@ namespace ProjectPBF.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            await _activityLogService.LogAsync(
+                currentUser.Id,
+                ActivityActionType.Created,
+                "Character",
+                character.Id,
+                $"Utworzono postać {character.Name} w kampanii {campaign.Title}",
+                campaignId: campaign.Id,
+                characterId: character.Id
+            );
+
             return RedirectToAction(nameof(Details), new { id = character.Id });
         }
 
@@ -337,6 +364,19 @@ namespace ProjectPBF.Controllers
                     characterModel.UpdatedAt = DateTime.UtcNow;
                     _context.Update(characterModel);
                     await _context.SaveChangesAsync();
+
+                    var currentUser = await _userManager.GetUserAsync(User);
+                    if (currentUser != null)
+                    {
+                        await _activityLogService.LogAsync(
+                            currentUser.Id,
+                            ActivityActionType.Updated,
+                            "Character",
+                            characterModel.Id,
+                            $"Zedytowano postać: {characterModel.Name}",
+                            characterId: characterModel.Id
+                        );
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -373,8 +413,23 @@ namespace ProjectPBF.Controllers
             var characterModel = await _context.CharacterModels.FindAsync(id);
             if (characterModel != null)
             {
+                var deletedCharacterId = characterModel.Id;
+                var deletedCharacterName = characterModel.Name;
+
                 _context.CharacterModels.Remove(characterModel);
                 await _context.SaveChangesAsync();
+
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser != null)
+                {
+                    await _activityLogService.LogAsync(
+                        currentUser.Id,
+                        ActivityActionType.Deleted,
+                        "Character",
+                        deletedCharacterId,
+                        $"Usunięto postać: {deletedCharacterName}"
+                    );
+                }
             }
 
             return RedirectToAction(nameof(Index));

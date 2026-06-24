@@ -27,5 +27,6 @@ namespace ProjectPBF.Models
         public ICollection<CharacterModel> Characters { get; set; } = new List<CharacterModel>();
         public ICollection<CampaignModel> LedCampaigns { get; set; } = new List<CampaignModel>();
         public ICollection<CampaignMemberModel> CampaignMemberships { get; set; } = new List<CampaignMemberModel>();
+        public ICollection<ActivityLogModel> ActivityLogs { get; set; } = new List<ActivityLogModel>();
     }
 }

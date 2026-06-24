@@ -5,7 +5,7 @@
 namespace ProjectPBF.Migrations
 {
     /// <inheritdoc />
-    public partial class RolesAdded : Migration
+    public partial class AddActivityLogs : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -12,8 +12,8 @@ using ProjectPBF.Data;
 namespace ProjectPBF.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260512205906_AddForumModels")]
-    partial class AddForumModels
+    [Migration("20260624124621_AddActivityLogs")]
+    partial class AddActivityLogs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -162,6 +162,59 @@ namespace ProjectPBF.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ProjectPBF.Models.ActivityLogModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActionType")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CampaignId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActionType");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("CharacterId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ActivityLogs");
+                });
+
             modelBuilder.Entity("ProjectPBF.Models.CampaignCharacterModel", b =>
                 {
                     b.Property<int>("Id")
@@ -204,6 +257,122 @@ namespace ProjectPBF.Migrations
                         .IsUnique();
 
                     b.ToTable("CampaignCharacterModels");
+                });
+
+            modelBuilder.Entity("ProjectPBF.Models.CampaignClassModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("MainStatistic")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("StartingGold")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("StartingHealth")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(10);
+
+                    b.Property<int>("StartingResource")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(3);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("CampaignId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("CampaignClasses");
+                });
+
+            modelBuilder.Entity("ProjectPBF.Models.CampaignItemTemplateModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Effect")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<bool>("IsAvailable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("ItemType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int>("Price")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Rarity")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("CampaignId", "Name");
+
+                    b.ToTable("CampaignItemTemplates");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.CampaignMemberModel", b =>
@@ -266,6 +435,11 @@ namespace ProjectPBF.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(20);
 
+                    b.Property<int>("StatisticPointsPerLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(5);
+
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -283,6 +457,67 @@ namespace ProjectPBF.Migrations
                     b.HasIndex("Status");
 
                     b.ToTable("CampaignModels");
+                });
+
+            modelBuilder.Entity("ProjectPBF.Models.CampaignSkillTemplateModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Cooldown")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("Cost")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Effect")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<bool>("IsAvailable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Requirements")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("CampaignId", "Name");
+
+                    b.ToTable("CampaignSkillTemplates");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.CampaignStatisticModel", b =>
@@ -313,6 +548,56 @@ namespace ProjectPBF.Migrations
                     b.ToTable("CampaignStatistics");
                 });
 
+            modelBuilder.Entity("ProjectPBF.Models.CharacterDevelopmentLogModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExperienceChange")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HistoryPointsChange")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int>("StatisticPointsChange")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharacterId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.ToTable("CharacterDevelopmentLogs");
+                });
+
             modelBuilder.Entity("ProjectPBF.Models.CharacterModel", b =>
                 {
                     b.Property<int>("Id")
@@ -324,8 +609,16 @@ namespace ProjectPBF.Migrations
                     b.Property<int>("Agility")
                         .HasColumnType("int");
 
+                    b.Property<int>("AvailableStatisticPoints")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("AvatarUrl")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("CampaignClassId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -337,7 +630,16 @@ namespace ProjectPBF.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
 
+                    b.Property<int>("Experience")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HistoryPoints")
+                        .HasColumnType("int");
+
                     b.Property<int>("Intelligence")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Level")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -361,11 +663,96 @@ namespace ProjectPBF.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CampaignClassId");
+
                     b.HasIndex("UserId");
 
                     b.HasIndex("UserId", "Status");
 
                     b.ToTable("CharacterModels");
+                });
+
+            modelBuilder.Entity("ProjectPBF.Models.CharacterSkillModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CampaignSkillTemplateId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Cooldown")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("Cost")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Effect")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int>("RequestedHistoryPointCost")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Requirements")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("ReviewComment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReviewedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignSkillTemplateId");
+
+                    b.HasIndex("CharacterId");
+
+                    b.HasIndex("ReviewedByUserId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("CharacterSkills");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.CharacterStatisticValueModel", b =>
@@ -390,6 +777,9 @@ namespace ProjectPBF.Migrations
                     b.HasIndex("CampaignStatisticId");
 
                     b.HasIndex("CharacterId");
+
+                    b.HasIndex("CharacterId", "CampaignStatisticId")
+                        .IsUnique();
 
                     b.ToTable("CharacterStatisticValues");
                 });
@@ -486,6 +876,9 @@ namespace ProjectPBF.Migrations
                     b.Property<int?>("QuotePostId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Tags")
+                        .HasColumnType("int");
+
                     b.Property<int>("ThreadId")
                         .HasColumnType("int");
 
@@ -539,6 +932,12 @@ namespace ProjectPBF.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ArchivedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ArchivedByUserId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -551,6 +950,9 @@ namespace ProjectPBF.Migrations
                     b.Property<int>("ForumId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsLocked")
                         .HasColumnType("bit");
 
@@ -558,6 +960,9 @@ namespace ProjectPBF.Migrations
                         .HasColumnType("bit");
 
                     b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Tags")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -569,9 +974,77 @@ namespace ProjectPBF.Migrations
 
                     b.HasIndex("ForumId");
 
+                    b.HasIndex("IsArchived");
+
                     b.HasIndex("Title");
 
                     b.ToTable("ForumThreads");
+                });
+
+            modelBuilder.Entity("ProjectPBF.Models.InventoryItemModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CampaignItemTemplateId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Effect")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int?>("GrantedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsEquipped")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ItemType")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<string>("Rarity")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignItemTemplateId");
+
+                    b.HasIndex("CharacterId");
+
+                    b.HasIndex("GrantedByUserId");
+
+                    b.ToTable("InventoryItems");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.SessionMemberModel", b =>
@@ -886,6 +1359,30 @@ namespace ProjectPBF.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ProjectPBF.Models.ActivityLogModel", b =>
+                {
+                    b.HasOne("ProjectPBF.Models.CampaignModel", "Campaign")
+                        .WithMany("ActivityLogs")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ProjectPBF.Models.CharacterModel", "Character")
+                        .WithMany("ActivityLogs")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("ProjectPBF.Models.UserModel", "User")
+                        .WithMany("ActivityLogs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Campaign");
+
+                    b.Navigation("Character");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ProjectPBF.Models.CampaignCharacterModel", b =>
                 {
                     b.HasOne("ProjectPBF.Models.CampaignModel", "Campaign")
@@ -903,6 +1400,28 @@ namespace ProjectPBF.Migrations
                     b.Navigation("Campaign");
 
                     b.Navigation("Character");
+                });
+
+            modelBuilder.Entity("ProjectPBF.Models.CampaignClassModel", b =>
+                {
+                    b.HasOne("ProjectPBF.Models.CampaignModel", "Campaign")
+                        .WithMany("Classes")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
+                });
+
+            modelBuilder.Entity("ProjectPBF.Models.CampaignItemTemplateModel", b =>
+                {
+                    b.HasOne("ProjectPBF.Models.CampaignModel", "Campaign")
+                        .WithMany("ItemTemplates")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.CampaignMemberModel", b =>
@@ -935,6 +1454,17 @@ namespace ProjectPBF.Migrations
                     b.Navigation("GameMaster");
                 });
 
+            modelBuilder.Entity("ProjectPBF.Models.CampaignSkillTemplateModel", b =>
+                {
+                    b.HasOne("ProjectPBF.Models.CampaignModel", "Campaign")
+                        .WithMany("SkillTemplates")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
+                });
+
             modelBuilder.Entity("ProjectPBF.Models.CampaignStatisticModel", b =>
                 {
                     b.HasOne("ProjectPBF.Models.CampaignModel", "Campaign")
@@ -946,15 +1476,65 @@ namespace ProjectPBF.Migrations
                     b.Navigation("Campaign");
                 });
 
+            modelBuilder.Entity("ProjectPBF.Models.CharacterDevelopmentLogModel", b =>
+                {
+                    b.HasOne("ProjectPBF.Models.CharacterModel", "Character")
+                        .WithMany("DevelopmentLogs")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjectPBF.Models.UserModel", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Character");
+
+                    b.Navigation("CreatedByUser");
+                });
+
             modelBuilder.Entity("ProjectPBF.Models.CharacterModel", b =>
                 {
+                    b.HasOne("ProjectPBF.Models.CampaignClassModel", "CampaignClass")
+                        .WithMany()
+                        .HasForeignKey("CampaignClassId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("ProjectPBF.Models.UserModel", "User")
                         .WithMany("Characters")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CampaignClass");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ProjectPBF.Models.CharacterSkillModel", b =>
+                {
+                    b.HasOne("ProjectPBF.Models.CampaignSkillTemplateModel", "CampaignSkillTemplate")
+                        .WithMany()
+                        .HasForeignKey("CampaignSkillTemplateId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("ProjectPBF.Models.CharacterModel", "Character")
+                        .WithMany("Skills")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjectPBF.Models.UserModel", "ReviewedByUser")
+                        .WithMany()
+                        .HasForeignKey("ReviewedByUserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CampaignSkillTemplate");
+
+                    b.Navigation("Character");
+
+                    b.Navigation("ReviewedByUser");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.CharacterStatisticValueModel", b =>
@@ -1024,6 +1604,31 @@ namespace ProjectPBF.Migrations
                         .IsRequired();
 
                     b.Navigation("Forum");
+                });
+
+            modelBuilder.Entity("ProjectPBF.Models.InventoryItemModel", b =>
+                {
+                    b.HasOne("ProjectPBF.Models.CampaignItemTemplateModel", "CampaignItemTemplate")
+                        .WithMany()
+                        .HasForeignKey("CampaignItemTemplateId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("ProjectPBF.Models.CharacterModel", "Character")
+                        .WithMany("InventoryItems")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjectPBF.Models.UserModel", "GrantedByUser")
+                        .WithMany()
+                        .HasForeignKey("GrantedByUserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CampaignItemTemplate");
+
+                    b.Navigation("Character");
+
+                    b.Navigation("GrantedByUser");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.SessionMemberModel", b =>
@@ -1114,18 +1719,34 @@ namespace ProjectPBF.Migrations
 
             modelBuilder.Entity("ProjectPBF.Models.CampaignModel", b =>
                 {
+                    b.Navigation("ActivityLogs");
+
                     b.Navigation("CampaignCharacters");
+
+                    b.Navigation("Classes");
+
+                    b.Navigation("ItemTemplates");
 
                     b.Navigation("Members");
 
                     b.Navigation("Sessions");
+
+                    b.Navigation("SkillTemplates");
 
                     b.Navigation("Statistics");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.CharacterModel", b =>
                 {
+                    b.Navigation("ActivityLogs");
+
                     b.Navigation("CampaignCharacters");
+
+                    b.Navigation("DevelopmentLogs");
+
+                    b.Navigation("InventoryItems");
+
+                    b.Navigation("Skills");
 
                     b.Navigation("StatisticValues");
                 });
@@ -1164,6 +1785,8 @@ namespace ProjectPBF.Migrations
 
             modelBuilder.Entity("ProjectPBF.Models.UserModel", b =>
                 {
+                    b.Navigation("ActivityLogs");
+
                     b.Navigation("CampaignMemberships");
 
                     b.Navigation("Characters");
