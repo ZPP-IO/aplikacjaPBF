@@ -24,11 +24,15 @@
                             <li class="nav-item"><a class="nav-link" asp-controller="Ranking" asp-action="Index">Ranking</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Users" asp-action="Index">Społeczność</a></li>
 
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="ActivityLogs" asp-action="Index">Log aktywności</a></li>
+                            }
+
                             @if (User.IsInRole("Administrator") || User.IsInRole("GameMaster"))
                             {
                                 <li class="nav-item"><a class="nav-link" asp-controller="UserApproval" asp-action="Index">Akceptacja</a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="CharacterSkills" asp-action="Pending">Zatwierdzanie umiejętności</a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="ActivityLogs" asp-action="Index">Log aktywności</a></li>
                             }
                         </ul>
                         <div class="gn-actions"><partial name="_LoginPartial" /></div>

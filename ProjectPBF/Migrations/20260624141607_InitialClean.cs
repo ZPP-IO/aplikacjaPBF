@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ProjectPBF.Migrations
 {
     /// <inheritdoc />
-    public partial class Migrations : Migration
+    public partial class InitialClean : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -554,6 +554,43 @@ namespace ProjectPBF.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ActivityLogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    CampaignId = table.Column<int>(type: "int", nullable: true),
+                    CharacterId = table.Column<int>(type: "int", nullable: true),
+                    ActionType = table.Column<int>(type: "int", nullable: false),
+                    EntityType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    EntityId = table.Column<int>(type: "int", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ActivityLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ActivityLogs_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ActivityLogs_CampaignModels_CampaignId",
+                        column: x => x.CampaignId,
+                        principalTable: "CampaignModels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ActivityLogs_CharacterModels_CharacterId",
+                        column: x => x.CharacterId,
+                        principalTable: "CharacterModels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CampaignCharacterModels",
                 columns: table => new
                 {
@@ -774,6 +811,31 @@ namespace ProjectPBF.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityLogs_ActionType",
+                table: "ActivityLogs",
+                column: "ActionType");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityLogs_CampaignId",
+                table: "ActivityLogs",
+                column: "CampaignId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityLogs_CharacterId",
+                table: "ActivityLogs",
+                column: "CharacterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityLogs_CreatedAt",
+                table: "ActivityLogs",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityLogs_UserId",
+                table: "ActivityLogs",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -1074,6 +1136,9 @@ namespace ProjectPBF.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ActivityLogs");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 

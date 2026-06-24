@@ -12,8 +12,8 @@ using ProjectPBF.Data;
 namespace ProjectPBF.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260624124621_AddActivityLogs")]
-    partial class AddActivityLogs
+    [Migration("20260624141607_InitialClean")]
+    partial class InitialClean
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
