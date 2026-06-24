@@ -1,4 +1,9 @@
-﻿@if (User.IsInRole("ADMIN"))
-{
-    <a href="/Admin">Panel admina</a>
+﻿@{
+    ViewData["Title"] = "Okno admina";
 }
+
+<div class="container py-4">
+    <h1>Okno admina</h1>
+    <p>Panel został przeniesiony do osobnego kontrolera.</p>
+    <a class="btn btn-primary" asp-controller="AdminPanel" asp-action="Index">Przejdź do okna admina</a>
+</div>

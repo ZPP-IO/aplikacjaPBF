@@ -65,5 +65,6 @@ namespace ProjectPBF.Models
         public ICollection<CharacterSkillModel> Skills { get; set; } = new List<CharacterSkillModel>();
         public ICollection<InventoryItemModel> InventoryItems { get; set; } = new List<InventoryItemModel>();
         public ICollection<CharacterDevelopmentLogModel> DevelopmentLogs { get; set; } = new List<CharacterDevelopmentLogModel>();
+        public ICollection<ActivityLogModel> ActivityLogs { get; set; } = new List<ActivityLogModel>();
     }
 }

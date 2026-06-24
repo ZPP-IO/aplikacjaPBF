@@ -32,7 +32,7 @@ builder.Services.AddDefaultIdentity<UserModel>(options =>
 
 // testowa obsługa maili
 builder.Services.AddScoped<IEmailSender, DevEmailSender>();
-
+builder.Services.AddScoped<ActivityLogService>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";

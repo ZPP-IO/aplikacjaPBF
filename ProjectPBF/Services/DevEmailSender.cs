@@ -1,47 +1,42 @@
-﻿using System.Text;
-using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using Microsoft.EntityFrameworkCore;
+using ProjectPBF.Data;
+using ProjectPBF.Models;
+using ProjectPBF.Models.Enums;
 
 namespace ProjectPBF.Services
 {
-    public class DevEmailSender : IEmailSender
+    public class ActivityLogService
     {
-        private readonly IWebHostEnvironment _environment;
-        private readonly ILogger<DevEmailSender> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public DevEmailSender(IWebHostEnvironment environment, ILogger<DevEmailSender> logger)
+        public ActivityLogService(ApplicationDbContext context)
         {
-            _environment = environment;
-            _logger = logger;
+            _context = context;
         }
 
-        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
+        public async Task LogAsync(
+            int? userId,
+            ActivityActionType actionType,
+            string entityType,
+            int? entityId,
+            string description,
+            int? campaignId = null,
+            int? characterId = null)
         {
-            var mailsFolder = Path.Combine(_environment.ContentRootPath, "DevMails");
-            Directory.CreateDirectory(mailsFolder);
+            var log = new ActivityLogModel
+            {
+                UserId = userId,
+                CampaignId = campaignId,
+                CharacterId = characterId,
+                ActionType = actionType,
+                EntityType = entityType,
+                EntityId = entityId,
+                Description = description,
+                CreatedAt = DateTime.UtcNow
+            };
 
-            var safeEmail = string.Join("_", email.Split(Path.GetInvalidFileNameChars()));
-            var fileName = $"{DateTime.Now:yyyyMMdd_HHmmss}_{safeEmail}.html";
-            var filePath = Path.Combine(mailsFolder, fileName);
-
-            var content = $"""
-                <html>
-                <head>
-                    <meta charset="utf-8" />
-                    <title>{subject}</title>
-                </head>
-                <body style="font-family: Arial, sans-serif;">
-                    <h2>DEV EMAIL</h2>
-                    <p><strong>Do:</strong> {email}</p>
-                    <p><strong>Temat:</strong> {subject}</p>
-                    <hr />
-                    {htmlMessage}
-                </body>
-                </html>
-                """;
-
-            await File.WriteAllTextAsync(filePath, content, Encoding.UTF8);
-
-            _logger.LogInformation("DEV EMAIL zapisany do pliku: {FilePath}", filePath);
+            _context.ActivityLogs.Add(log);
+            await _context.SaveChangesAsync();
         }
     }
 }

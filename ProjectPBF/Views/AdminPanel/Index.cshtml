@@ -1,0 +1,205 @@
+﻿@{
+    ViewData["Title"] = "Okno admina";
+}
+
+<style>
+    .admin-shell {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .admin-hero {
+        background: linear-gradient(135deg, rgba(18, 30, 58, 0.96), rgba(5, 12, 28, 0.98));
+        border: 1px solid rgba(255, 208, 117, 0.18);
+        border-radius: 28px;
+        padding: 2rem;
+        box-shadow: 0 20px 55px rgba(0, 0, 0, 0.35);
+        margin-bottom: 1.5rem;
+    }
+
+    .admin-eyebrow {
+        color: #39c7ff;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        font-weight: 900;
+        font-size: .9rem;
+        margin-bottom: .5rem;
+    }
+
+    .admin-title {
+        color: #f3df9b;
+        font-weight: 900;
+        font-size: clamp(2rem, 4vw, 3.6rem);
+        line-height: 1;
+        margin-bottom: .8rem;
+        text-transform: uppercase;
+    }
+
+    .admin-subtitle {
+        color: #e9e3d5;
+        font-size: 1.1rem;
+        max-width: 900px;
+        margin-bottom: 0;
+    }
+
+    .admin-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .admin-card {
+        background: rgba(11, 20, 42, 0.94);
+        border: 1px solid rgba(255, 208, 117, 0.14);
+        border-radius: 22px;
+        padding: 1.4rem;
+        min-height: 230px;
+        box-shadow: 0 16px 38px rgba(0, 0, 0, 0.22);
+    }
+
+    .admin-card h2 {
+        color: #f3df9b;
+        font-weight: 900;
+        font-size: 1.35rem;
+        margin-bottom: .4rem;
+    }
+
+    .admin-card p {
+        color: #b9c4d8;
+        margin-bottom: 1rem;
+        min-height: 48px;
+    }
+
+    .admin-actions {
+        display: flex;
+        flex-direction: column;
+        gap: .55rem;
+    }
+
+    .admin-link {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        text-decoration: none;
+        color: #f5f1e8;
+        background: rgba(255, 255, 255, 0.045);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: .72rem .9rem;
+        transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    }
+
+    .admin-link:hover {
+        color: #ffffff;
+        background: rgba(255, 208, 117, 0.10);
+        border-color: rgba(255, 208, 117, 0.28);
+        transform: translateY(-1px);
+    }
+
+    .admin-link span:last-child {
+        color: #f3df9b;
+        font-weight: 900;
+    }
+
+    .admin-note {
+        margin-top: 1.5rem;
+        color: #aeb8cb;
+        background: rgba(57, 199, 255, 0.06);
+        border: 1px solid rgba(57, 199, 255, 0.16);
+        border-radius: 18px;
+        padding: 1rem 1.2rem;
+    }
+
+    @@media (max-width: 1100px) {
+        .admin-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .admin-shell {
+            padding: 1rem;
+        }
+
+        .admin-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="admin-shell">
+    <section class="admin-hero">
+        <div class="admin-eyebrow">Tylko administrator</div>
+        <h1 class="admin-title">Okno admina</h1>
+        <p class="admin-subtitle">
+            Centralne miejsce z opcjami administracyjnymi. Ten panel widzi tylko użytkownik z rolą Administrator.
+        </p>
+    </section>
+
+    <section class="admin-grid">
+        <article class="admin-card">
+            <h2>Użytkownicy</h2>
+            <p>Kontrola kont, akceptacja nowych graczy i podgląd społeczności.</p>
+            <div class="admin-actions">
+                <a class="admin-link" asp-controller="UserApproval" asp-action="Index"><span>Akceptacja kont</span><span>→</span></a>
+                <a class="admin-link" asp-controller="Users" asp-action="Index"><span>Lista użytkowników</span><span>→</span></a>
+                <a class="admin-link" asp-controller="ActivityLogs" asp-action="Index"><span>Log aktywności</span><span>→</span></a>
+            </div>
+        </article>
+
+        <article class="admin-card">
+            <h2>Kampanie i fabuła</h2>
+            <p>Zarządzanie kampaniami, wydarzeniami, misjami i globalnymi działaniami.</p>
+            <div class="admin-actions">
+                <a class="admin-link" asp-controller="Campaigns" asp-action="Browse"><span>Kampanie</span><span>→</span></a>
+                <a class="admin-link" asp-controller="CalendarEvents" asp-action="Index"><span>Kalendarz wydarzeń</span><span>→</span></a>
+                <a class="admin-link" asp-controller="MissionProposals" asp-action="Index"><span>Misje i fabuły</span><span>→</span></a>
+            </div>
+        </article>
+
+        <article class="admin-card">
+            <h2>Forum</h2>
+            <p>Przejścia do forów, kategorii i wątków fabularnych.</p>
+            <div class="admin-actions">
+                <a class="admin-link" asp-controller="ForumCategories" asp-action="Index"><span>Kategorie forów</span><span>→</span></a>
+                <a class="admin-link" asp-controller="Forums" asp-action="Index"><span>Fora</span><span>→</span></a>
+                <a class="admin-link" asp-controller="Threads" asp-action="Index"><span>Wątki</span><span>→</span></a>
+            </div>
+        </article>
+
+        <article class="admin-card">
+            <h2>Postacie</h2>
+            <p>Podgląd postaci, ranking i zatwierdzanie zgłoszonych umiejętności.</p>
+            <div class="admin-actions">
+                <a class="admin-link" asp-controller="CharacterModels" asp-action="Browse"><span>Wszystkie postacie</span><span>→</span></a>
+                <a class="admin-link" asp-controller="CharacterSkills" asp-action="Pending"><span>Zatwierdzanie umiejętności</span><span>→</span></a>
+                <a class="admin-link" asp-controller="Ranking" asp-action="Index"><span>Ranking postaci</span><span>→</span></a>
+            </div>
+        </article>
+
+        <article class="admin-card">
+            <h2>Zasady i konflikty</h2>
+            <p>Moduły do zasad rozstrzygania walk, testów i wydarzeń fabularnych.</p>
+            <div class="admin-actions">
+                <a class="admin-link" asp-controller="ConflictRules" asp-action="Index"><span>Zasady konfliktów</span><span>→</span></a>
+                <a class="admin-link" asp-controller="ConflictRules" asp-action="Create"><span>Dodaj zasadę</span><span>→</span></a>
+            </div>
+        </article>
+
+        <article class="admin-card">
+            <h2>Szybkie akcje</h2>
+            <p>Najczęściej używane miejsca w panelu administracyjnym.</p>
+            <div class="admin-actions">
+                <a class="admin-link" asp-controller="Campaigns" asp-action="Create"><span>Stwórz kampanię</span><span>→</span></a>
+                <a class="admin-link" asp-controller="CalendarEvents" asp-action="Create"><span>Dodaj wydarzenie</span><span>→</span></a>
+                <a class="admin-link" asp-controller="Forums" asp-action="Create"><span>Dodaj forum</span><span>→</span></a>
+            </div>
+        </article>
+    </section>
+
+    <div class="admin-note">
+        Jeśli któryś przycisk prowadzi do strony 404, oznacza to, że dany moduł nie został jeszcze wklejony do projektu albo nie ma kontrolera dla tej funkcji.
+    </div>
+</div>

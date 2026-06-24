@@ -37,6 +37,7 @@ namespace ProjectPBF.Data
         public DbSet<ForumThreadModel> ForumThreads { get; set; } = null!;
         public DbSet<ForumPostModel> ForumPosts { get; set; } = null!;
         public DbSet<ForumPostRevisionModel> ForumPostRevisions { get; set; } = null!;
+        public DbSet<ActivityLogModel> ActivityLogs { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -372,6 +373,43 @@ namespace ProjectPBF.Data
                       .WithMany()
                       .HasForeignKey(x => x.UserId)
                       .OnDelete(DeleteBehavior.NoAction);
+            });
+            builder.Entity<ActivityLogModel>(entity =>
+            {
+                entity.Property(x => x.ActionType)
+                    .HasConversion<int>();
+
+                entity.Property(x => x.EntityType)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(x => x.Description)
+                    .IsRequired()
+                    .HasMaxLength(2000);
+
+                entity.Property(x => x.CreatedAt)
+                    .HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(x => x.UserId);
+                entity.HasIndex(x => x.CampaignId);
+                entity.HasIndex(x => x.CharacterId);
+                entity.HasIndex(x => x.CreatedAt);
+                entity.HasIndex(x => x.ActionType);
+
+                entity.HasOne(x => x.User)
+                    .WithMany(x => x.ActivityLogs)
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(x => x.Campaign)
+                    .WithMany(x => x.ActivityLogs)
+                    .HasForeignKey(x => x.CampaignId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.Character)
+                    .WithMany(x => x.ActivityLogs)
+                    .HasForeignKey(x => x.CharacterId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             // indeksy wyszukiwania i wydajności

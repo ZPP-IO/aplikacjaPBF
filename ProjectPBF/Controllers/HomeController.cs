@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ProjectPBF.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -24,10 +24,10 @@ namespace ProjectPBF.Controllers
         {
             return View();
         }
-        [Authorize(Roles = "PLAYER,GM,ADMIN")] // narazie tak potem mozna zmienic na tylko admin
+        [Authorize(Roles = "Administrator")]
         public IActionResult AdminPanel()
         {
-            return View();
+            return RedirectToAction("Index", "AdminPanel");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -40,5 +40,6 @@ namespace ProjectPBF.Models
 
         // Nowa kolekcja: sesje należące do kampanii
         public ICollection<SessionModel> Sessions { get; set; } = new List<SessionModel>();
+        public ICollection<ActivityLogModel> ActivityLogs { get; set; } = new List<ActivityLogModel>();
     }
 }
