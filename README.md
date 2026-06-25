@@ -34,8 +34,8 @@
    - [X]    Rangi i uprawnienia różnych ról (MG, admin, gracz).
    - [X]   Kalendarz wydarzeń fabularnych (daty eventów, sesje grupowe).​
    - [X]    Mechanizm ogłaszania eventów i działań (np. wojny, misje specjalne).​
-   - [ ]    Logi światowe / wydarzenia historii świata.​
-   - [ ]    Zasady wpływu wydarzeń na mechanikę postaci.
+   - [X]    Logi światowe / wydarzenia historii świata.​
+   - [X]    Zasady wpływu wydarzeń na mechanikę postaci.
    
    Dodatkowe:
    
