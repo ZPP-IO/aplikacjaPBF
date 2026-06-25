@@ -29,7 +29,7 @@
    - [X]    Mechanizm prywatnych wiadomości między graczami.​ **[Kacper]**
    - [X]    Możliwość oznaczania wątków i postów (np. spoiling, ważne informacje).​ **[Patryk]**
    - [ ]    System zgłaszania postów do moderacji. **[Kacper]**
-   - [ ]    Powiadomienia o odpowiedziach w wątkach i wiadomościach prywatnych.​
+   - [X]    Powiadomienia o odpowiedziach w wątkach i wiadomościach prywatnych.​
    - [50//50 Dokończ (dodawanie postów, edycje, usuwanie) albo nie chuj wie  ]    Log aktywności (dodawanie postów, edycje, usuwanie).​**[Daniel]**
    - [X]    Rangi i uprawnienia różnych ról (MG, admin, gracz).
    - [X]   Kalendarz wydarzeń fabularnych (daty eventów, sesje grupowe).​
