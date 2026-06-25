@@ -47,6 +47,7 @@ namespace ProjectPBF.Data
         public DbSet<ActivityLogModel> ActivityLogs { get; set; } = null!;
         public DbSet<PrivateMessageModel> PrivateMessages { get; set; } = null!;
         public DbSet<NotificationModel> Notifications { get; set; } = null!;
+        public DbSet<ReportModel> Reports { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -606,6 +607,30 @@ namespace ProjectPBF.Data
                     .WithMany()
                     .HasForeignKey(x => x.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<ReportModel>(entity =>
+            {
+                entity.Property(x => x.TargetType).HasConversion<int>();
+                entity.Property(x => x.Status).HasConversion<int>().HasDefaultValue(ReportStatus.New);
+                entity.Property(x => x.Reason).IsRequired().HasMaxLength(1000);
+                entity.Property(x => x.TargetSnapshot).HasMaxLength(300);
+                entity.Property(x => x.AdminNote).HasMaxLength(1000);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(x => x.Status);
+                entity.HasIndex(x => new { x.TargetType, x.TargetId });
+                entity.HasIndex(x => x.CreatedAt);
+
+                entity.HasOne(x => x.Reporter)
+                    .WithMany()
+                    .HasForeignKey(x => x.ReporterUserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.ReviewedByUser)
+                    .WithMany()
+                    .HasForeignKey(x => x.ReviewedByUserId)
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
             // indeksy wyszukiwania i wydajności

@@ -140,6 +140,21 @@
 
     <section class="admin-grid">
         <article class="admin-card">
+            <h2>Moderacja</h2>
+            <p>
+                Zgłoszenia postów, wątków i wiadomości prywatnych od użytkowników.
+                @if ((int)ViewBag.NewReportsCount > 0)
+                {
+                    <span class="gn-badge tag-important">@ViewBag.NewReportsCount nowe</span>
+                }
+            </p>
+            <div class="admin-actions">
+                <a class="admin-link" asp-controller="Reports" asp-action="Index"><span>Zgłoszenia</span><span>→</span></a>
+                <a class="admin-link" asp-controller="Reports" asp-action="Index" asp-route-status="New"><span>Tylko nowe</span><span>→</span></a>
+            </div>
+        </article>
+
+        <article class="admin-card">
             <h2>Użytkownicy</h2>
             <p>Kontrola kont, akceptacja nowych graczy i podgląd społeczności.</p>
             <div class="admin-actions">

@@ -24,6 +24,12 @@ namespace ProjectPBF.Models
         public int? ApprovedByUserId { get; set; }
         public UserModel? ApprovedByUser { get; set; }
 
+        /// <summary>
+        /// Ręcznie ustawiony status obecności przez użytkownika.
+        /// Jeśli LastSeenAt jest starsze niż 15 minut, aplikacja wyświetla "Offline" niezależnie od tego pola.
+        /// </summary>
+        public PresenceStatus PresenceStatus { get; set; } = PresenceStatus.Available;
+
         public ICollection<CharacterModel> Characters { get; set; } = new List<CharacterModel>();
         public ICollection<CampaignModel> LedCampaigns { get; set; } = new List<CampaignModel>();
         public ICollection<CampaignMemberModel> CampaignMemberships { get; set; } = new List<CampaignMemberModel>();

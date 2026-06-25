@@ -1,0 +1,111 @@
+@model List<ProjectPBF.Models.ReportModel>
+@using ProjectPBF.Models.Enums
+@{
+    ViewData["Title"] = "Zgłoszenia";
+    var selectedStatus = (ReportStatus?)ViewBag.SelectedStatus;
+    var links = (Dictionary<int, string?>)ViewBag.TargetLinks;
+
+    string TargetTypeLabel(ReportTargetType t) => t switch
+    {
+        ReportTargetType.ForumPost => "Post",
+        ReportTargetType.ForumThread => "Wątek",
+        ReportTargetType.PrivateMessage => "Wiadomość",
+        _ => t.ToString()
+    };
+
+    string StatusLabel(ReportStatus s) => s switch
+    {
+        ReportStatus.New => "Nowe",
+        ReportStatus.Reviewed => "Rozpatrzone",
+        ReportStatus.Dismissed => "Odrzucone",
+        _ => s.ToString()
+    };
+
+    string StatusBadgeClass(ReportStatus s) => s switch
+    {
+        ReportStatus.New => "tag-important",
+        ReportStatus.Reviewed => "tag-ooc",
+        ReportStatus.Dismissed => "tag-archived",
+        _ => "tag-archived"
+    };
+}
+
+<section class="page-panel">
+    <div class="page-heading align-items-center">
+        <div>
+            <span class="eyebrow">Moderacja</span>
+            <h1 class="mb-0">Zgłoszenia</h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-sm @(selectedStatus == null ? "btn-gn-primary" : "btn-outline-secondary")">Wszystkie</a>
+            <a asp-action="Index" asp-route-status="New" class="btn btn-sm @(selectedStatus == ReportStatus.New ? "btn-gn-primary" : "btn-outline-secondary")">Nowe</a>
+            <a asp-action="Index" asp-route-status="Reviewed" class="btn btn-sm @(selectedStatus == ReportStatus.Reviewed ? "btn-gn-primary" : "btn-outline-secondary")">Rozpatrzone</a>
+            <a asp-action="Index" asp-route-status="Dismissed" class="btn btn-sm @(selectedStatus == ReportStatus.Dismissed ? "btn-gn-primary" : "btn-outline-secondary")">Odrzucone</a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-dark mt-4">Brak zgłoszeń w tej kategorii.</div>
+    }
+    else
+    {
+        <div class="posts-list mt-4">
+            @foreach (var r in Model)
+            {
+                <article class="post-card mb-3">
+                    <div class="post-header p-2 px-3 d-flex justify-content-between align-items-center flex-wrap">
+                        <div class="post-info small">
+                            <span class="gn-badge @StatusBadgeClass(r.Status)">@StatusLabel(r.Status)</span>
+                            <span class="fw-bold ms-2">@TargetTypeLabel(r.TargetType) #@r.TargetId</span>
+                            <span class="text-muted ms-3">Zgłosił: @(r.Reporter?.Nick ?? "?")</span>
+                            <span class="text-muted ms-3">@r.CreatedAt.ToString("g")</span>
+                        </div>
+                        @if (links.TryGetValue(r.Id, out var link) && !string.IsNullOrEmpty(link))
+                        {
+                            <a href="@link" class="btn btn-outline-secondary btn-sm">Otwórz treść →</a>
+                        }
+                    </div>
+
+                    <div class="post-body p-3">
+                        <div class="mb-2">
+                            <strong class="text-muted small">Podgląd zgłaszanej treści:</strong>
+                            <div class="text-muted">@r.TargetSnapshot</div>
+                        </div>
+                        <div>
+                            <strong class="text-muted small">Powód zgłoszenia:</strong>
+                            <div>@r.Reason</div>
+                        </div>
+
+                        @if (r.Status != ReportStatus.New)
+                        {
+                            <div class="mt-2 small text-muted">
+                                Rozpatrzone przez @(r.ReviewedByUser?.Nick ?? "?") (@r.ReviewedAt?.ToString("g"))
+                                @if (!string.IsNullOrEmpty(r.AdminNote))
+                                {
+                                    <div>Notatka: @r.AdminNote</div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    @if (r.Status == ReportStatus.New)
+                    {
+                        <div class="p-3 pt-0">
+                            <form asp-action="Resolve" method="post" class="d-flex flex-wrap gap-2 align-items-end">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@r.Id" />
+                                <div class="flex-grow-1" style="min-width: 220px;">
+                                    <input type="text" name="adminNote" class="form-control form-control-sm bg-dark text-white border-secondary"
+                                           placeholder="Notatka administratora (opcjonalnie)" maxlength="1000" />
+                                </div>
+                                <button type="submit" name="status" value="Reviewed" class="btn btn-sm btn-outline-warning">Oznacz jako rozpatrzone</button>
+                                <button type="submit" name="status" value="Dismissed" class="btn btn-sm btn-outline-secondary">Odrzuć zgłoszenie</button>
+                            </form>
+                        </div>
+                    }
+                </article>
+            }
+        </div>
+    }
+</section>

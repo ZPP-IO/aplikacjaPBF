@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Zgłoszenie wysłane";
+    var returnUrl = (string?)ViewBag.ReturnUrl;
+}
+
+<section class="page-panel text-center" style="max-width: 600px; margin: 0 auto;">
+    <h1 class="mb-3">Dziękujemy za zgłoszenie</h1>
+    <p class="text-muted">
+        Administracja zostanie poinformowana i sprawdzi tę treść. Zgłoszenia są rozpatrywane wewnętrznie
+        i nie zawsze otrzymasz osobistą odpowiedź.
+    </p>
+    <div class="mt-4">
+        @if (!string.IsNullOrEmpty(returnUrl))
+        {
+            <a href="@returnUrl" class="btn btn-gn-primary btn-sm px-4">Wróć</a>
+        }
+        else
+        {
+            <a asp-controller="Home" asp-action="Index" class="btn btn-gn-primary btn-sm px-4">Strona główna</a>
+        }
+    </div>
+</section>

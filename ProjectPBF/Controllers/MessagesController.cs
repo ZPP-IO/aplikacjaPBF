@@ -36,25 +36,23 @@ namespace ProjectPBF.Controllers
             var currentUserId = GetCurrentUserId();
             if (currentUserId == null) return Challenge();
 
-            var myMessages = await _db.PrivateMessages
+            var lastMessage = await _db.PrivateMessages
                 .Include(m => m.Sender)
                 .Include(m => m.Recipient)
                 .Where(m => m.SenderId == currentUserId.Value || m.RecipientId == currentUserId.Value)
                 .OrderByDescending(m => m.SentAt)
-                .ToListAsync();
+                .FirstOrDefaultAsync();
 
-            var conversations = myMessages
-                .GroupBy(m => m.SenderId == currentUserId.Value ? m.RecipientId : m.SenderId)
-                .Select(g => new ConversationSummary
-                {
-                    OtherUser = (g.First().SenderId == currentUserId.Value ? g.First().Recipient : g.First().Sender)!,
-                    LastMessage = g.First(),
-                    UnreadCount = g.Count(m => m.RecipientId == currentUserId.Value && !m.IsRead)
-                })
-                .OrderByDescending(c => c.LastMessage.SentAt)
-                .ToList();
+            if (lastMessage != null)
+            {
+                var otherUserId = lastMessage.SenderId == currentUserId.Value
+                    ? lastMessage.RecipientId
+                    : lastMessage.SenderId;
+                return RedirectToAction(nameof(Conversation), new { userId = otherUserId });
+            }
 
-            ViewBag.Conversations = conversations;
+            // Brak konwersacji — pokaż pustą skrzynkę
+            ViewBag.Conversations = new List<ConversationSummary>();
             return View();
         }
 
@@ -86,7 +84,27 @@ namespace ProjectPBF.Controllers
                 await _db.SaveChangesAsync();
             }
 
+            // Załaduj listę konwersacji do panelu bocznego
+            var myMessages = await _db.PrivateMessages
+                .Include(m => m.Sender)
+                .Include(m => m.Recipient)
+                .Where(m => m.SenderId == currentUserId.Value || m.RecipientId == currentUserId.Value)
+                .OrderByDescending(m => m.SentAt)
+                .ToListAsync();
+
+            var conversations = myMessages
+                .GroupBy(m => m.SenderId == currentUserId.Value ? m.RecipientId : m.SenderId)
+                .Select(g => new ConversationSummary
+                {
+                    OtherUser = (g.First().SenderId == currentUserId.Value ? g.First().Recipient : g.First().Sender)!,
+                    LastMessage = g.First(),
+                    UnreadCount = g.Count(m => m.RecipientId == currentUserId.Value && !m.IsRead)
+                })
+                .OrderByDescending(c => c.LastMessage.SentAt)
+                .ToList();
+
             ViewBag.OtherUser = otherUser;
+            ViewBag.Conversations = conversations;
             return View(messages);
         }
 

@@ -1,39 +1,428 @@
-﻿@model IEnumerable<ProjectPBF.Models.UserModel>
+@model ProjectPBF.ViewModels.CommunityIndexViewModel
+@using ProjectPBF.ViewModels
+@using ProjectPBF.Models.Enums
 
 @{
-    ViewData["Title"] = "Użytkownicy";
+    ViewData["Title"] = "Społeczność";
 }
 
-<div class="container py-4">
-    <h1 class="mb-4">Użytkownicy</h1>
+@* ───────────────────────────── CSS ───────────────────────────── *@
+<style>
+    /* ── zmienne ── */
+    :root {
+        --clr-online:  #22c55e;
+        --clr-busy:    #f59e0b;
+        --clr-away:    #94a3b8;
+        --clr-offline: #475569;
+        --radius-card: 12px;
+    }
 
-    @if (!Model.Any())
+    /* ── układ strony ── */
+    .community-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+    }
+    .community-meta  { color: var(--muted); font-size: .875rem; margin-top: .2rem; }
+
+    /* ── widget własnego statusu ── */
+    .my-status-widget {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: .6rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        flex-wrap: wrap;
+    }
+    .my-status-label { font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .status-btn {
+        border: none;
+        border-radius: 20px;
+        padding: .3rem .85rem;
+        font-size: .8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity .15s, transform .1s;
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        opacity: .55;
+    }
+    .status-btn:hover          { opacity: .8; transform: scale(1.04); }
+    .status-btn.active         { opacity: 1; box-shadow: 0 0 0 2px rgba(255,255,255,.15), 0 0 0 4px currentColor; }
+    .status-btn.btn-available  { background: rgba(34,197,94,.15); color: #22c55e; }
+    .status-btn.btn-busy       { background: rgba(245,158,11,.15); color: #f59e0b; }
+    .status-btn.btn-unavailable { background: rgba(148,163,184,.1); color: var(--muted); }
+    .status-dot {
+        width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+    }
+    .dot-available  { background: var(--clr-online); }
+    .dot-busy       { background: var(--clr-busy); }
+    .dot-unavailable{ background: var(--clr-offline); }
+
+    /* ── pasek filtrów ── */
+    .filter-bar {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: .75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+    .filter-bar .form-control { max-width: 220px; border-radius: 8px; font-size: .875rem; }
+    .filter-badge {
+        border: none;
+        border-radius: 20px;
+        padding: .22rem .7rem;
+        font-size: .75rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        opacity: .5;
+        transition: opacity .15s, box-shadow .15s;
+        text-decoration: none;
+        background: rgba(255,255,255,.08);
+        color: var(--muted);
+    }
+    .filter-badge:hover { opacity: .85; color: var(--muted); }
+    .filter-badge.active { opacity: 1; color: var(--muted); }
+    .filter-badge.f-all        { background: rgba(255,255,255,.08); color: var(--text); }
+    .filter-badge.f-all.active { opacity: 1; box-shadow: 0 0 0 2px rgba(255,255,255,.15), 0 0 0 3px var(--text); color: var(--text); }
+    .filter-badge.f-online        { background: rgba(34,197,94,.15);  color: #22c55e; }
+    .filter-badge.f-online.active { box-shadow: 0 0 0 2px rgba(255,255,255,.15), 0 0 0 3px #22c55e; }
+    .filter-badge.f-busy          { background: rgba(245,158,11,.15); color: #f59e0b; }
+    .filter-badge.f-busy.active   { box-shadow: 0 0 0 2px rgba(255,255,255,.15), 0 0 0 3px #f59e0b; }
+    .filter-badge.f-away          { background: rgba(148,163,184,.1); color: #94a3b8; }
+    .filter-badge.f-away.active   { box-shadow: 0 0 0 2px rgba(255,255,255,.15), 0 0 0 3px #94a3b8; }
+    .filter-badge.f-offline       { background: rgba(71,85,105,.2);   color: #64748b; }
+    .filter-badge.f-offline.active{ box-shadow: 0 0 0 2px rgba(255,255,255,.15), 0 0 0 3px #475569; }
+
+    /* ── siatka kart ── */
+    .community-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.25rem;
+    }
+
+    /* ── karta użytkownika ── */
+    .user-card {
+        background: rgba(255,255,255,.05);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-card);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: box-shadow .2s, transform .2s;
+    }
+    .user-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.08); transform: translateY(-2px); }
+
+    .user-card-avatar-wrap {
+        position: relative;
+        height: 180px;
+        background: linear-gradient(135deg, rgba(32,38,51,.92) 0%, rgba(14,18,27,.95) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .user-card-avatar-wrap img {
+        width: 100%; height: 100%; object-fit: cover;
+        transition: transform .3s;
+    }
+    .user-card:hover .user-card-avatar-wrap img { transform: scale(1.04); }
+    .user-card-avatar-placeholder {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: rgba(255,255,255,.35);
+        user-select: none;
+    }
+
+    /* ── badge statusu na awatarze ── */
+    .presence-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        border-radius: 20px;
+        padding: .2rem .65rem;
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .03em;
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255,255,255,.25);
+        text-transform: uppercase;
+    }
+    .presence-badge .badge-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+    }
+    .badge-online  { background: rgba(34,197,94,.9);  color: #fff; }
+    .badge-busy    { background: rgba(245,158,11,.9);  color: #fff; }
+    .badge-away    { background: rgba(148,163,184,.85); color: #fff; }
+    .badge-offline { background: rgba(71,85,105,.85);  color: #fff; }
+
+    /* ── treść karty ── */
+    .user-card-body {
+        padding: 1rem 1.1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .user-nick {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text);
+        margin: 0 0 .2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .user-bio {
+        font-size: .8rem;
+        color: var(--muted);
+        margin-bottom: .65rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.5;
+        min-height: 2.4em;
+    }
+    .user-stats {
+        display: flex;
+        gap: .6rem;
+        font-size: .75rem;
+        color: var(--muted);
+        margin-bottom: .65rem;
+    }
+    .user-stat { display: flex; align-items: center; gap: .25rem; }
+    .user-stat-icon { font-size: .85em; }
+    .user-since {
+        font-size: .72rem;
+        color: var(--muted);
+        margin-bottom: .8rem;
+    }
+
+    .card-footer-actions {
+        display: flex;
+        gap: .5rem;
+        border-top: 1px solid var(--border);
+        padding: .75rem 1.1rem;
+        background: rgba(255,255,255,.03);
+    }
+    .card-footer-actions .btn { flex: 1; font-size: .8rem; padding: .3rem .5rem; border-radius: 7px; }
+
+    /* ── pusta lista ── */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--muted);
+    }
+    .empty-state-icon { font-size: 3rem; margin-bottom: .75rem; }
+    .empty-state p { margin: 0; font-size: .95rem; }
+
+    /* ── toast ── */
+    #statusToast {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 9999;
+        min-width: 220px;
+        font-size: .875rem;
+    }
+</style>
+
+<section class="page-panel">
+
+    @* ── nagłówek ── *@
+    <div class="community-header">
+        <div>
+            <span class="eyebrow">Społeczność</span>
+            <h1>Użytkownicy</h1>
+            <p class="community-meta">
+                @Model.TotalCount użytkownik@(Model.TotalCount == 1 ? "" : Model.TotalCount is >= 2 and <= 4 ? "ów" : "ów") —
+                <span style="color: var(--clr-online); font-weight:600;">@Model.OnlineCount aktywnych</span>
+            </p>
+        </div>
+    </div>
+
+    @* ── pasek filtrów ── *@
+    <div class="filter-bar">
+        <form method="get" class="d-flex align-items-center gap-2" style="flex:1">
+            <input type="text"
+                   name="search"
+                   value="@Model.SearchQuery"
+                   class="form-control form-control-sm"
+                   placeholder="Szukaj po nicku…">
+            <input type="hidden" name="status" value="@Model.StatusFilter" id="hiddenStatusFilter">
+            <button type="submit" class="btn btn-sm btn-gn-secondary">Szukaj</button>
+            @if (!string.IsNullOrWhiteSpace(Model.SearchQuery) || !string.IsNullOrWhiteSpace(Model.StatusFilter))
+            {
+                <a href="/Users" class="btn btn-sm btn-outline-secondary">✕ Wyczyść</a>
+            }
+        </form>
+
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <span style="font-size:.75rem;color:var(--muted);">Filtruj:</span>
+            @{
+                var filters = new[]
+                {
+                    ("",        "Wszyscy",      "f-all",     ""),
+                    ("Online",  "Online",        "f-online",  "#22c55e"),
+                    ("Busy",    "Zajęty",        "f-busy",    "#f59e0b"),
+                    ("Away",    "Zaraz wracam",  "f-away",    "#94a3b8"),
+                    ("Offline", "Offline",       "f-offline", "#475569"),
+                };
+            }
+            @foreach (var (val, lbl, cls, dot) in filters)
+            {
+                var active = (Model.StatusFilter ?? "") == val ? "active" : "";
+                var href = string.IsNullOrEmpty(val)
+                    ? $"/Users{(string.IsNullOrWhiteSpace(Model.SearchQuery) ? "" : $"?search={Model.SearchQuery}")}"
+                    : $"/Users?status={val}{(string.IsNullOrWhiteSpace(Model.SearchQuery) ? "" : $"&search={Model.SearchQuery}")}";
+                <a href="@href" class="filter-badge @cls @active">
+                    @if (!string.IsNullOrEmpty(dot))
+                    {
+                        <span style="width:7px;height:7px;border-radius:50%;background:@dot;display:inline-block;flex-shrink:0"></span>
+                    }
+                    @lbl
+                </a>
+            }
+        </div>
+    </div>
+
+    @* ── siatka kart ── *@
+    @if (!Model.Users.Any())
     {
-        <div class="alert alert-info">
-            Brak użytkowników do wyświetlenia.
+        <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <p>Nie znaleziono użytkowników spełniających kryteria.</p>
         </div>
     }
     else
     {
-        <div class="row">
-            @foreach (var user in Model)
+        <div class="community-grid">
+            @foreach (var u in Model.Users)
             {
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        @if (!string.IsNullOrWhiteSpace(user.AvatarUrl))
-                        {
-                            <img src="@user.AvatarUrl" class="card-img-top" alt="Avatar użytkownika" style="height: 250px; object-fit: cover;" />
-                        }
+                var (badgeClass, badgeLabel, dotColor) = u.OnlineStatus switch
+                {
+                    ComputedOnlineStatus.Online  => ("badge-online",  "Online",  "#22c55e"),
+                    ComputedOnlineStatus.Busy    => ("badge-busy",    "Zajęty",  "#f59e0b"),
+                    ComputedOnlineStatus.Away    => ("badge-away",    "Zaraz wracam", "#94a3b8"),
+                    _                            => ("badge-offline", "Offline", "#475569")
+                };
 
-                        <div class="card-body">
-                            <h5 class="card-title">@user.Nick</h5>
-                            <a asp-controller="Users" asp-action="Details" asp-route-id="@user.Id" class="btn btn-primary">
-                                Zobacz profil
-                            </a>
+                <div class="user-card">
+                    <div class="user-card-avatar-wrap">
+                        @if (!string.IsNullOrWhiteSpace(u.AvatarUrl))
+                        {
+                            <img src="@u.AvatarUrl" alt="Avatar @u.Nick" loading="lazy">
+                        }
+                        else
+                        {
+                            <span class="user-card-avatar-placeholder">@u.Nick[0].ToString().ToUpper()</span>
+                        }
+                        <span class="presence-badge @badgeClass">
+                            <span class="badge-dot" style="background:@dotColor"></span>
+                            @badgeLabel
+                        </span>
+                    </div>
+
+                    <div class="user-card-body">
+                        <p class="user-nick">@u.Nick</p>
+
+                        <p class="user-bio">
+                            @(string.IsNullOrWhiteSpace(u.Bio) ? "Brak opisu." : u.Bio)
+                        </p>
+
+                        <div class="user-stats">
+                            <span class="user-stat">
+                                <span class="user-stat-icon">⚔️</span>
+                                @u.CharacterCount post@(u.CharacterCount == 1 ? "ać" : "aci")
+                            </span>
+                            <span class="user-stat">
+                                <span class="user-stat-icon">🗺️</span>
+                                @u.CampaignCount kampani@(u.CampaignCount == 1 ? "a" : "i")
+                            </span>
                         </div>
+
+                        <p class="user-since">
+                            Dołączył: @u.CreatedAt.ToString("dd.MM.yyyy")
+                        </p>
+                    </div>
+
+                    <div class="card-footer-actions">
+                        <a asp-controller="Users" asp-action="Details" asp-route-id="@u.Id"
+                           class="btn btn-outline-secondary btn-sm">Profil</a>
+                        <a asp-controller="Messages" asp-action="Conversation"
+                           asp-route-userId="@u.Id"
+                           class="btn btn-primary btn-sm">✉️ Wiadomość</a>
                     </div>
                 </div>
             }
         </div>
     }
+</section>
+
+@* ── toast ── *@
+<div id="statusToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+        <div class="toast-body" id="toastMsg">Status zaktualizowany.</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
 </div>
+
+@section Scripts {
+<script>
+    const antiForgeryToken = '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1] ?? '';
+
+    async function setMyStatus(statusValue, btn) {
+        const spinner = document.getElementById('statusSpinner');
+        spinner.classList.remove('d-none');
+
+        // Optimistic UI
+        document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        try {
+            const resp = await fetch('/Users/SetStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': antiForgeryToken
+                },
+                body: JSON.stringify({ status: statusValue })
+            });
+
+            if (!resp.ok) throw new Error('Błąd serwera');
+
+            showToast('✅ Status zmieniony pomyślnie.', 'bg-success');
+        } catch (e) {
+            showToast('❌ Nie udało się zmienić statusu.', 'bg-danger');
+            // Cofnij optimistic update
+            document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+        } finally {
+            spinner.classList.add('d-none');
+        }
+    }
+
+    function showToast(message, bgClass) {
+        const toastEl = document.getElementById('statusToast');
+        toastEl.className = `toast align-items-center text-white border-0 ${bgClass}`;
+        document.getElementById('toastMsg').textContent = message;
+        const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+        toast.show();
+    }
+</script>
+}

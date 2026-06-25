@@ -1,44 +1,103 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @using ProjectPBF.Models
+@using ProjectPBF.Models.Enums
 @inject SignInManager<UserModel> SignInManager
 @inject UserManager<UserModel> UserManager
 
-<ul class="navbar-nav">
-    @if (SignInManager.IsSignedIn(User))
+@if (SignInManager.IsSignedIn(User))
+{
+    var currentUser = await UserManager.GetUserAsync(User);
+    var status = currentUser?.PresenceStatus ?? PresenceStatus.Available;
+    var (statusColor, statusLabel) = status switch
     {
-        var currentUser = await UserManager.GetUserAsync(User);
+        PresenceStatus.Available   => ("#22c55e", "Dostępny"),
+        PresenceStatus.Busy        => ("#f59e0b", "Zajęty"),
+        PresenceStatus.Unavailable => ("#475569", "Niedostępny"),
+        _                          => ("#475569", "Niedostępny")
+    };
 
-        <li class="nav-item d-flex align-items-center">
-            <a class="nav-link text-dark d-flex align-items-center" asp-area="Identity" asp-page="/Account/Manage/Index" title="Zarządzaj kontem">
-                <span class="me-2">Zalogowany jako @(currentUser?.Nick ?? User.Identity?.Name)</span>
-
+    <div class="nav-item dropdown gn-user-dropdown">
+        <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="gn-user-avatar-wrap">
                 @if (currentUser != null && !string.IsNullOrEmpty(currentUser.AvatarUrl))
                 {
-                    <img src="@currentUser.AvatarUrl"
-                         alt="User Avatar"
-                         style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid #007bff;" />
+                    <img src="@currentUser.AvatarUrl" alt="Avatar" class="gn-user-avatar" />
                 }
                 else
                 {
-                    <div style="width: 30px; height: 30px; border-radius: 50%; background-color: #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666;">
-                        ?
+                    <div class="gn-user-avatar-placeholder">
+                        @((currentUser?.Nick ?? User.Identity?.Name ?? "?")[0].ToString().ToUpper())
                     </div>
                 }
-            </a>
-        </li>
-        <li class="nav-item">
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-            </form>
-        </li>
+                <span class="gn-user-status-dot" style="background:@statusColor"></span>
+            </div>
+            <span>@(currentUser?.Nick ?? User.Identity?.Name)</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li class="gn-user-dropdown-info">
+                <span class="gn-user-dropdown-nick">@(currentUser?.Nick ?? User.Identity?.Name)</span>
+                <span class="gn-user-dropdown-status" style="color:@statusColor">● @statusLabel</span>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li class="gn-status-row">
+                <span class="gn-status-label">Status:</span>
+                <div class="gn-status-btns">
+                    <button type="button" class="gn-status-btn gn-status-btn-available @(status == PresenceStatus.Available ? "active" : "")"
+                            data-status="0" onclick="setStatus(0,this)">
+                        <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block"></span> Dostępny
+                    </button>
+                    <button type="button" class="gn-status-btn gn-status-btn-busy @(status == PresenceStatus.Busy ? "active" : "")"
+                            data-status="1" onclick="setStatus(1,this)">
+                        <span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;display:inline-block"></span> Zajęty
+                    </button>
+                    <button type="button" class="gn-status-btn gn-status-btn-unavailable @(status == PresenceStatus.Unavailable ? "active" : "")"
+                            data-status="2" onclick="setStatus(2,this)">
+                        <span style="width:7px;height:7px;border-radius:50%;background:#475569;display:inline-block"></span> Niedostępny
+                    </button>
+                </div>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <a class="dropdown-item" asp-controller="Messages" asp-action="Index">✉️ Wiadomości</a>
+            </li>
+            <li>
+                <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">⚙️ Zarządzaj kontem</a>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <form asp-area="Identity" asp-page="/Account/Logout"
+                      asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="dropdown-item">🚪 Wyloguj</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+}
+else
+{
+    <a class="nav-link gn-login-link" asp-area="Identity" asp-page="/Account/Register">Register</a>
+    <a class="nav-link gn-login-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
+}
+
+<script>
+    async function setStatus(val, btn) {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+        try {
+            await fetch('/Users/SetStatus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify({ status: val })
+            });
+            // Zaktualizuj kropkę statusu na awatarze
+            const colors = { 0: '#22c55e', 1: '#f59e0b', 2: '#475569' };
+            const labels = { 0: 'Dostępny', 1: 'Zajęty', 2: 'Niedostępny' };
+            const dot = document.querySelector('.gn-user-status-dot');
+            if (dot) dot.style.background = colors[val];
+            const statusSpan = document.querySelector('.gn-user-dropdown-status');
+            if (statusSpan) { statusSpan.style.color = colors[val]; statusSpan.textContent = '● ' + labels[val]; }
+            document.querySelectorAll('.gn-status-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        } catch(e) { console.error(e); }
     }
-    else
-    {
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-        </li>
-    }
-</ul>
+</script>

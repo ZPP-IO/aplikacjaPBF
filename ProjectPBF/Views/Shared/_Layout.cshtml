@@ -17,7 +17,6 @@
                     <button class="navbar-toggler gn-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"><span class="navbar-toggler-icon"></span></button>
                     <div class="collapse navbar-collapse" id="mainNavbar">
                         <ul class="navbar-nav mx-auto gn-menu">
-                            <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Strona główna</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Campaigns" asp-action="Browse">Kampanie</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Forums">Fora</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="CharacterModels" asp-action="Index">Moje postacie</a></li>
@@ -62,7 +61,6 @@
                         <div class="gn-actions">
                             @if (User.Identity?.IsAuthenticated == true)
                             {
-                                <a class="gn-icon-link" asp-controller="Messages" asp-action="Index" title="Wiadomości">✉️</a>
                                 <vc:notification-bell></vc:notification-bell>
                             }
                             <partial name="_LoginPartial" />

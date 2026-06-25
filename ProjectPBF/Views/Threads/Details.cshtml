@@ -92,6 +92,13 @@
                     <button type="submit" class="btn btn-outline-secondary btn-sm">@(Model.IsPinned ? "Odepnij" : "Przyklej")</button>
                 </form>
             }
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Reports" asp-action="Create"
+                   asp-route-targetType="ForumThread" asp-route-targetId="@Model.Id"
+                   asp-route-returnUrl="@Context.Request.Path"
+                   class="btn btn-outline-danger btn-sm">🚩 Zgłoś wątek</a>
+            }
             <a asp-action="Index" asp-route-forumId="@Model.ForumId" class="btn btn-outline-secondary btn-sm">Powrót</a>
         </div>
     </div>
@@ -135,6 +142,13 @@
                     </div>
 
                     <div class="post-actions">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-controller="Reports" asp-action="Create"
+                               asp-route-targetType="ForumPost" asp-route-targetId="@p.Id"
+                               asp-route-returnUrl="@Context.Request.Path"
+                               class="btn btn-link text-danger p-0 m-0 me-2 post-action-link">[ 🚩 Zgłoś ]</a>
+                        }
                         @if (isAdmin || p.UserId == currentUserId)
                         {
                             <button type="button" class="btn btn-link text-warning p-0 m-0 me-2 post-action-link" onclick="toggleEdit(@p.Id)">[ Edytuj ]</button>

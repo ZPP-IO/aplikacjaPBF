@@ -1,43 +1,416 @@
-﻿@using ProjectPBF.Controllers
+@model ProjectPBF.ViewModels.CommunityIndexViewModel
+@using ProjectPBF.ViewModels
+@using ProjectPBF.Models.Enums
+
 @{
-    ViewData["Title"] = "Wiadomości";
-    var conversations = ViewBag.Conversations as List<ConversationSummary> ?? new List<ConversationSummary>();
+    ViewData["Title"] = "Społeczność";
 }
 
+@* ───────────────────────────── CSS ───────────────────────────── *@
+<style>
+    /* ── zmienne ── */
+    :root {
+        --clr-online:  #22c55e;
+        --clr-busy:    #f59e0b;
+        --clr-away:    #94a3b8;
+        --clr-offline: #475569;
+        --radius-card: 12px;
+    }
+
+    /* ── układ strony ── */
+    .community-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+    }
+    .community-meta  { color: var(--muted); font-size: .875rem; margin-top: .2rem; }
+
+    /* ── widget własnego statusu ── */
+    .my-status-widget {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: .6rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        flex-wrap: wrap;
+    }
+    .my-status-label { font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .status-btn {
+        border: none;
+        border-radius: 20px;
+        padding: .3rem .85rem;
+        font-size: .8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity .15s, transform .1s;
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        opacity: .55;
+    }
+    .status-btn:hover          { opacity: .8; transform: scale(1.04); }
+    .status-btn.active         { opacity: 1; box-shadow: 0 0 0 2px rgba(255,255,255,.15), 0 0 0 4px currentColor; }
+    .status-btn.btn-available  { background: rgba(34,197,94,.15); color: #22c55e; }
+    .status-btn.btn-busy       { background: rgba(245,158,11,.15); color: #f59e0b; }
+    .status-btn.btn-unavailable { background: rgba(148,163,184,.1); color: var(--muted); }
+    .status-dot {
+        width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+    }
+    .dot-available  { background: var(--clr-online); }
+    .dot-busy       { background: var(--clr-busy); }
+    .dot-unavailable{ background: var(--clr-offline); }
+
+    /* ── pasek filtrów ── */
+    .filter-bar {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: .75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+    .filter-bar .form-control { max-width: 220px; border-radius: 8px; font-size: .875rem; }
+    .filter-badge {
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: .25rem .8rem;
+        font-size: .8rem;
+        font-weight: 600;
+        cursor: pointer;
+        background: rgba(255,255,255,.05);
+        color: var(--muted);
+        text-decoration: none;
+        transition: background .15s, color .15s;
+    }
+    .filter-badge:hover,
+    .filter-badge.active { background: var(--text); color: #05070b; border-color: var(--text); }
+    .filter-badge.f-online  { border-color: var(--clr-online);  color: #15803d; }
+    .filter-badge.f-online.active  { background: var(--clr-online);  color: #fff; border-color: var(--clr-online); }
+    .filter-badge.f-busy    { border-color: var(--clr-busy);    color: #b45309; }
+    .filter-badge.f-busy.active    { background: var(--clr-busy);    color: #fff; border-color: var(--clr-busy); }
+    .filter-badge.f-away    { border-color: var(--muted); color: var(--muted); }
+    .filter-badge.f-away.active    { background: #94a3b8; color: #fff; border-color: var(--muted); }
+    .filter-badge.f-offline { border-color: var(--muted); color: var(--muted); }
+    .filter-badge.f-offline.active { background: #475569; color: #fff; border-color: var(--muted); }
+
+    /* ── siatka kart ── */
+    .community-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.25rem;
+    }
+
+    /* ── karta użytkownika ── */
+    .user-card {
+        background: rgba(255,255,255,.05);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-card);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: box-shadow .2s, transform .2s;
+    }
+    .user-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.08); transform: translateY(-2px); }
+
+    .user-card-avatar-wrap {
+        position: relative;
+        height: 180px;
+        background: linear-gradient(135deg, rgba(32,38,51,.92) 0%, rgba(14,18,27,.95) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .user-card-avatar-wrap img {
+        width: 100%; height: 100%; object-fit: cover;
+        transition: transform .3s;
+    }
+    .user-card:hover .user-card-avatar-wrap img { transform: scale(1.04); }
+    .user-card-avatar-placeholder {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: rgba(255,255,255,.35);
+        user-select: none;
+    }
+
+    /* ── badge statusu na awatarze ── */
+    .presence-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        border-radius: 20px;
+        padding: .2rem .65rem;
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .03em;
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255,255,255,.25);
+        text-transform: uppercase;
+    }
+    .presence-badge .badge-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+    }
+    .badge-online  { background: rgba(34,197,94,.9);  color: #fff; }
+    .badge-busy    { background: rgba(245,158,11,.9);  color: #fff; }
+    .badge-away    { background: rgba(148,163,184,.85); color: #fff; }
+    .badge-offline { background: rgba(71,85,105,.85);  color: #fff; }
+
+    /* ── treść karty ── */
+    .user-card-body {
+        padding: 1rem 1.1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .user-nick {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text);
+        margin: 0 0 .2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .user-bio {
+        font-size: .8rem;
+        color: var(--muted);
+        margin-bottom: .65rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.5;
+        min-height: 2.4em;
+    }
+    .user-stats {
+        display: flex;
+        gap: .6rem;
+        font-size: .75rem;
+        color: var(--muted);
+        margin-bottom: .65rem;
+    }
+    .user-stat { display: flex; align-items: center; gap: .25rem; }
+    .user-stat-icon { font-size: .85em; }
+    .user-since {
+        font-size: .72rem;
+        color: var(--muted);
+        margin-bottom: .8rem;
+    }
+
+    .card-footer-actions {
+        display: flex;
+        gap: .5rem;
+        border-top: 1px solid var(--border);
+        padding: .75rem 1.1rem;
+        background: rgba(255,255,255,.03);
+    }
+    .card-footer-actions .btn { flex: 1; font-size: .8rem; padding: .3rem .5rem; border-radius: 7px; }
+
+    /* ── pusta lista ── */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--muted);
+    }
+    .empty-state-icon { font-size: 3rem; margin-bottom: .75rem; }
+    .empty-state p { margin: 0; font-size: .95rem; }
+
+    /* ── toast ── */
+    #statusToast {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 9999;
+        min-width: 220px;
+        font-size: .875rem;
+    }
+</style>
+
 <section class="page-panel">
-    <div class="page-heading">
+
+    @* ── nagłówek ── *@
+    <div class="community-header">
         <div>
-            <span class="eyebrow">Skrzynka odbiorcza</span>
-            <h1>Wiadomości</h1>
+            <span class="eyebrow">Społeczność</span>
+            <h1>👥 Społeczność</h1>
+            <p class="community-meta">
+                @Model.TotalCount użytkownik@(Model.TotalCount == 1 ? "" : Model.TotalCount is >= 2 and <= 4 ? "ów" : "ów") —
+                <span style="color: var(--clr-online); font-weight:600;">@Model.OnlineCount aktywnych</span>
+            </p>
         </div>
     </div>
 
-    <div class="threads-list mt-4">
-        @foreach (var c in conversations)
-        {
-            <a asp-controller="Messages" asp-action="Conversation" asp-route-userId="@c.OtherUser.Id"
-               class="conversation-list-item @(c.UnreadCount > 0 ? "conversation-list-unread" : "")">
-                <div>
-                    <strong>@c.OtherUser.Nick</strong>
-                    <div class="conversation-preview">@c.LastMessage.Content</div>
-                </div>
-                <div class="text-end">
-                    <div class="text-muted small">@c.LastMessage.SentAt.ToString("g")</div>
-                    @if (c.UnreadCount > 0)
-                    {
-                        <span class="gn-badge tag-important">@c.UnreadCount nowe</span>
-                    }
-                </div>
-            </a>
-        }
+    @* ── pasek filtrów ── *@
+    <div class="filter-bar">
+        <form method="get" class="d-flex align-items-center gap-2" style="flex:1">
+            <input type="text"
+                   name="search"
+                   value="@Model.SearchQuery"
+                   class="form-control form-control-sm"
+                   placeholder="Szukaj po nicku…">
+            <input type="hidden" name="status" value="@Model.StatusFilter" id="hiddenStatusFilter">
+            <button type="submit" class="btn btn-sm btn-gn-secondary">Szukaj</button>
+            @if (!string.IsNullOrWhiteSpace(Model.SearchQuery) || !string.IsNullOrWhiteSpace(Model.StatusFilter))
+            {
+                <a href="/Users" class="btn btn-sm btn-outline-secondary">✕ Wyczyść</a>
+            }
+        </form>
+
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <span style="font-size:.75rem;color:var(--muted);">Filtruj:</span>
+            @{
+                var filters = new[]
+                {
+                    ("", "Wszyscy", ""),
+                    ("Online",  "🟢 Online",  "f-online"),
+                    ("Busy",    "🟡 Zajęty",  "f-busy"),
+                    ("Away",    "🔘 Zaraz wracam", "f-away"),
+                    ("Offline", "⚫ Offline", "f-offline"),
+                };
+            }
+            @foreach (var (val, lbl, cls) in filters)
+            {
+                var active = (Model.StatusFilter ?? "") == val ? "active" : "";
+                var href = string.IsNullOrEmpty(val)
+                    ? $"/Users{(string.IsNullOrWhiteSpace(Model.SearchQuery) ? "" : $"?search={Model.SearchQuery}")}"
+                    : $"/Users?status={val}{(string.IsNullOrWhiteSpace(Model.SearchQuery) ? "" : $"&search={Model.SearchQuery}")}";
+                <a href="@href" class="filter-badge @cls @active">@lbl</a>
+            }
+        </div>
     </div>
 
-    @if (!conversations.Any())
+    @* ── siatka kart ── *@
+    @if (!Model.Users.Any())
     {
         <div class="empty-state">
-            <span>✉️</span>
-            <h2>Brak wiadomości</h2>
-            <p>Odwiedź profil innego użytkownika, aby wysłać mu pierwszą wiadomość.</p>
+            <div class="empty-state-icon">🔍</div>
+            <p>Nie znaleziono użytkowników spełniających kryteria.</p>
+        </div>
+    }
+    else
+    {
+        <div class="community-grid">
+            @foreach (var u in Model.Users)
+            {
+                var (badgeClass, badgeLabel, dotColor) = u.OnlineStatus switch
+                {
+                    ComputedOnlineStatus.Online  => ("badge-online",  "Online",  "#22c55e"),
+                    ComputedOnlineStatus.Busy    => ("badge-busy",    "Zajęty",  "#f59e0b"),
+                    ComputedOnlineStatus.Away    => ("badge-away",    "Zaraz wracam", "#94a3b8"),
+                    _                            => ("badge-offline", "Offline", "#475569")
+                };
+
+                <div class="user-card">
+                    <div class="user-card-avatar-wrap">
+                        @if (!string.IsNullOrWhiteSpace(u.AvatarUrl))
+                        {
+                            <img src="@u.AvatarUrl" alt="Avatar @u.Nick" loading="lazy">
+                        }
+                        else
+                        {
+                            <span class="user-card-avatar-placeholder">@u.Nick[0].ToString().ToUpper()</span>
+                        }
+                        <span class="presence-badge @badgeClass">
+                            <span class="badge-dot" style="background:@dotColor"></span>
+                            @badgeLabel
+                        </span>
+                    </div>
+
+                    <div class="user-card-body">
+                        <p class="user-nick">@u.Nick</p>
+
+                        <p class="user-bio">
+                            @(string.IsNullOrWhiteSpace(u.Bio) ? "Brak opisu." : u.Bio)
+                        </p>
+
+                        <div class="user-stats">
+                            <span class="user-stat">
+                                <span class="user-stat-icon">⚔️</span>
+                                @u.CharacterCount post@(u.CharacterCount == 1 ? "ać" : "aci")
+                            </span>
+                            <span class="user-stat">
+                                <span class="user-stat-icon">🗺️</span>
+                                @u.CampaignCount kampani@(u.CampaignCount == 1 ? "a" : "i")
+                            </span>
+                        </div>
+
+                        <p class="user-since">
+                            Dołączył: @u.CreatedAt.ToString("dd.MM.yyyy")
+                        </p>
+                    </div>
+
+                    <div class="card-footer-actions">
+                        <a asp-controller="Users" asp-action="Details" asp-route-id="@u.Id"
+                           class="btn btn-outline-secondary btn-sm">Profil</a>
+                        <a asp-controller="Messages" asp-action="Conversation"
+                           asp-route-userId="@u.Id"
+                           class="btn btn-primary btn-sm">✉️ Wiadomość</a>
+                    </div>
+                </div>
+            }
         </div>
     }
 </section>
+
+@* ── toast ── *@
+<div id="statusToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+        <div class="toast-body" id="toastMsg">Status zaktualizowany.</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const antiForgeryToken = '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1] ?? '';
+
+    async function setMyStatus(statusValue, btn) {
+        const spinner = document.getElementById('statusSpinner');
+        spinner.classList.remove('d-none');
+
+        // Optimistic UI
+        document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        try {
+            const resp = await fetch('/Users/SetStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': antiForgeryToken
+                },
+                body: JSON.stringify({ status: statusValue })
+            });
+
+            if (!resp.ok) throw new Error('Błąd serwera');
+
+            showToast('✅ Status zmieniony pomyślnie.', 'bg-success');
+        } catch (e) {
+            showToast('❌ Nie udało się zmienić statusu.', 'bg-danger');
+            // Cofnij optimistic update
+            document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+        } finally {
+            spinner.classList.add('d-none');
+        }
+    }
+
+    function showToast(message, bgClass) {
+        const toastEl = document.getElementById('statusToast');
+        toastEl.className = `toast align-items-center text-white border-0 ${bgClass}`;
+        document.getElementById('toastMsg').textContent = message;
+        const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+        toast.show();
+    }
+</script>
+}

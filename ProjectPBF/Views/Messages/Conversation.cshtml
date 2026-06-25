@@ -1,43 +1,317 @@
-﻿@model List<ProjectPBF.Models.PrivateMessageModel>
+@model List<ProjectPBF.Models.PrivateMessageModel>
 @using System.Security.Claims
+@using ProjectPBF.Controllers
 @{
     var otherUser = (ProjectPBF.Models.UserModel)ViewBag.OtherUser;
     ViewData["Title"] = $"Rozmowa z {otherUser.Nick}";
     var currentUserIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     int.TryParse(currentUserIdStr, out var currentUserId);
+    var conversations = ViewBag.Conversations as List<ConversationSummary> ?? new List<ConversationSummary>();
 }
 
-<section class="page-panel narrow">
-    <div class="page-heading">
-        <div>
-            <span class="eyebrow">Wiadomości prywatne</span>
-            <h1>Rozmowa z @otherUser.Nick</h1>
-        </div>
-        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Powrót do skrzynki</a>
-    </div>
+<style>
+    .msg-shell {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 0;
+        height: calc(100vh - 180px);
+        min-height: 500px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(32,38,51,.92), rgba(14,18,27,.95));
+        box-shadow: 0 18px 38px rgba(0,0,0,.34), inset 0 0 0 1px rgba(255,255,255,.035);
+    }
 
-    <div class="message-thread-wrap mt-4">
-        @foreach (var m in Model)
-        {
-            var isMine = m.SenderId == currentUserId;
-            <div class="message-bubble @(isMine ? "message-bubble-mine" : "message-bubble-theirs")">
-                @m.Content
-                <span class="message-bubble-time">@m.SentAt.ToString("g")</span>
+    /* ── panel boczny ── */
+    .msg-sidebar {
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .msg-sidebar-header {
+        padding: 18px 16px 14px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+    .msg-sidebar-header .eyebrow { display: block; margin-bottom: 2px; }
+    .msg-sidebar-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--text);
+    }
+    .msg-conv-list {
+        overflow-y: auto;
+        flex: 1;
+    }
+    .msg-conv-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(255,255,255,.05);
+        text-decoration: none;
+        color: var(--text);
+        transition: background .15s;
+        position: relative;
+    }
+    .msg-conv-item:hover { background: rgba(255,255,255,.04); color: var(--text); }
+    .msg-conv-item.active { background: rgba(66,217,255,.07); border-left: 3px solid var(--cyan); }
+    .msg-conv-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 1px solid var(--border);
+    }
+    .msg-conv-avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.08);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .9rem;
+        font-weight: 900;
+        color: var(--muted);
+        flex-shrink: 0;
+    }
+    .msg-conv-info { flex: 1; min-width: 0; }
+    .msg-conv-nick {
+        font-size: .85rem;
+        font-weight: 700;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .msg-conv-preview {
+        font-size: .75rem;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 1px;
+    }
+    .msg-conv-meta {
+        flex-shrink: 0;
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+    }
+    .msg-conv-time {
+        font-size: .7rem;
+        color: var(--muted);
+        white-space: nowrap;
+    }
+    .msg-unread-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--cyan);
+    }
+
+    /* ── główny obszar czatu ── */
+    .msg-main {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .msg-main-header {
+        padding: 16px 22px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+    .msg-main-header-left { display: flex; align-items: center; gap: 10px; }
+    .msg-main-title {
+        font-size: 1rem;
+        font-weight: 900;
+        color: var(--text);
+        margin: 0;
+    }
+    .msg-main-subtitle { font-size: .75rem; color: var(--muted); }
+
+    .msg-thread {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .message-bubble {
+        max-width: 68%;
+        padding: .6rem .9rem;
+        border-radius: 14px;
+        font-size: .9rem;
+        line-height: 1.5;
+        position: relative;
+        word-break: break-word;
+    }
+    .message-bubble-theirs {
+        align-self: flex-start;
+        background: rgba(255,255,255,.07);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-bottom-left-radius: 4px;
+    }
+    .message-bubble-mine {
+        align-self: flex-end;
+        background: rgba(66,217,255,.13);
+        border: 1px solid rgba(66,217,255,.25);
+        color: var(--text);
+        border-bottom-right-radius: 4px;
+    }
+    .message-bubble-time {
+        display: block;
+        font-size: .68rem;
+        color: var(--muted);
+        margin-top: 4px;
+    }
+
+    .msg-compose {
+        padding: 14px 22px 18px;
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+    .msg-compose-row {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+    }
+    .msg-compose textarea {
+        flex: 1;
+        resize: none;
+        min-height: 44px;
+        max-height: 120px;
+    }
+
+    @@media (max-width: 760px) {
+        .msg-shell { grid-template-columns: 1fr; height: auto; }
+        .msg-sidebar { max-height: 220px; border-right: none; border-bottom: 1px solid var(--border); }
+    }
+</style>
+
+<div class="msg-shell">
+
+    @* ── PANEL BOCZNY ── *@
+    <aside class="msg-sidebar">
+        <div class="msg-sidebar-header">
+            <span class="eyebrow">Wiadomości</span>
+            <h2>Konwersacje</h2>
+        </div>
+        <div class="msg-conv-list">
+            @foreach (var c in conversations)
+            {
+                var isActive = c.OtherUser.Id == otherUser.Id;
+                var timeAgo = (DateTime.UtcNow - c.LastMessage.SentAt) switch
+                {
+                    var t when t.TotalMinutes < 1  => "teraz",
+                    var t when t.TotalMinutes < 60 => $"{(int)t.TotalMinutes} min",
+                    var t when t.TotalHours < 24   => $"{(int)t.TotalHours} godz",
+                    var t when t.TotalDays < 7     => $"{(int)t.TotalDays} dni",
+                    var t                           => c.LastMessage.SentAt.ToString("dd.MM")
+                };
+                <a asp-controller="Messages" asp-action="Conversation"
+                   asp-route-userId="@c.OtherUser.Id"
+                   class="msg-conv-item @(isActive ? "active" : "")">
+
+                    @if (!string.IsNullOrEmpty(c.OtherUser.AvatarUrl))
+                    {
+                        <img src="@c.OtherUser.AvatarUrl" alt="@c.OtherUser.Nick" class="msg-conv-avatar" />
+                    }
+                    else
+                    {
+                        <div class="msg-conv-avatar-placeholder">@c.OtherUser.Nick[0].ToString().ToUpper()</div>
+                    }
+
+                    <div class="msg-conv-info">
+                        <div class="msg-conv-nick">@c.OtherUser.Nick</div>
+                        <div class="msg-conv-preview">@c.LastMessage.Content</div>
+                    </div>
+
+                    <div class="msg-conv-meta">
+                        <span class="msg-conv-time">@timeAgo</span>
+                        @if (c.UnreadCount > 0)
+                        {
+                            <span class="msg-unread-dot"></span>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    </aside>
+
+    @* ── GŁÓWNY CZAT ── *@
+    <div class="msg-main">
+        <div class="msg-main-header">
+            <div class="msg-main-header-left">
+                @if (!string.IsNullOrEmpty(otherUser.AvatarUrl))
+                {
+                    <img src="@otherUser.AvatarUrl" alt="@otherUser.Nick" class="msg-conv-avatar" />
+                }
+                else
+                {
+                    <div class="msg-conv-avatar-placeholder">@otherUser.Nick[0].ToString().ToUpper()</div>
+                }
+                <div>
+                    <div class="msg-main-title">@otherUser.Nick</div>
+                    <div class="msg-main-subtitle">Wiadomości prywatne</div>
+                </div>
             </div>
-        }
+        </div>
 
-        @if (!Model.Any())
-        {
-            <p class="text-muted small text-center mt-3">Brak wiadomości w tej rozmowie. Napisz pierwszą!</p>
-        }
+        <div class="msg-thread" id="msgThread">
+            @foreach (var m in Model)
+            {
+                var isMine = m.SenderId == currentUserId;
+                <div class="message-bubble @(isMine ? "message-bubble-mine" : "message-bubble-theirs")">
+                    @m.Content
+                    <span class="message-bubble-time">
+                        @m.SentAt.ToLocalTime().ToString("g")
+                        <a asp-controller="Reports" asp-action="Create"
+                           asp-route-targetType="PrivateMessage" asp-route-targetId="@m.Id"
+                           asp-route-returnUrl="@Context.Request.Path"
+                           class="text-danger ms-2" title="Zgłoś tę wiadomość do administracji">🚩</a>
+                    </span>
+                </div>
+            }
+            @if (!Model.Any())
+            {
+                <p class="text-muted small text-center mt-3">Brak wiadomości. Napisz pierwszą!</p>
+            }
+        </div>
+
+        <div class="msg-compose">
+            <form asp-action="Send" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="recipientId" value="@otherUser.Id" />
+                <div class="msg-compose-row">
+                    <textarea name="content" class="form-control" rows="1" maxlength="4000"
+                              placeholder="Napisz wiadomość..." required
+                              onInput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea>
+                    <button type="submit" class="btn btn-gn-primary">Wyślij</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <form asp-action="Send" method="post" class="mt-4">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="recipientId" value="@otherUser.Id" />
-        <div class="mb-3">
-            <textarea name="content" class="form-control" rows="3" maxlength="4000" placeholder="Napisz wiadomość..." required></textarea>
-        </div>
-        <button type="submit" class="btn btn-gn-primary">Wyślij</button>
-    </form>
-</section>
+</div>
+
+@section Scripts {
+<script>
+    // Auto-scroll do dołu wątku
+    const thread = document.getElementById('msgThread');
+    if (thread) thread.scrollTop = thread.scrollHeight;
+</script>
+}

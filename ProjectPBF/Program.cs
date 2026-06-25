@@ -30,6 +30,15 @@ builder.Services.AddDefaultIdentity<UserModel>(options =>
 .AddRoles<IdentityRole<int>>()
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// Sesja do throttlowania zapisu LastSeenAt (raz na 2 minuty zamiast przy każdym żądaniu)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 // testowa obsługa maili
 builder.Services.AddScoped<IEmailSender, DevEmailSender>();
 builder.Services.AddScoped<ActivityLogService>();
@@ -68,6 +77,10 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Musi być po UseAuthentication i UseAuthorization, żeby User.Identity był dostępny
+app.UseSession();
+app.UseLastSeen();
 
 app.MapControllerRoute(
     name: "default",

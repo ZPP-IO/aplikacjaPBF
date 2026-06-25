@@ -1,0 +1,57 @@
+@using ProjectPBF.Models.Enums
+@{
+    ViewData["Title"] = "Zgłoś do administracji";
+    var targetType = (ReportTargetType)ViewBag.TargetType;
+    var targetId = (int)ViewBag.TargetId;
+    var snapshot = (string)ViewBag.Snapshot;
+    var returnUrl = (string?)ViewBag.ReturnUrl;
+
+    var targetLabel = targetType switch
+    {
+        ReportTargetType.ForumPost => "post na forum",
+        ReportTargetType.ForumThread => "wątek na forum",
+        ReportTargetType.PrivateMessage => "wiadomość prywatną",
+        _ => "treść"
+    };
+}
+
+<section class="page-panel" style="max-width: 700px; margin: 0 auto;">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Moderacja</span>
+            <h1 class="mb-0">Zgłoś @targetLabel</h1>
+        </div>
+    </div>
+
+    <div class="alert alert-dark mt-3">
+        <strong>Zgłaszana treść:</strong><br />
+        <span class="text-muted">@snapshot</span>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger" asp-validation-summary="ModelOnly"></div>
+    }
+
+    <form asp-controller="Reports" asp-action="Create" method="post" class="mt-3">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="targetType" value="@targetType" />
+        <input type="hidden" name="targetId" value="@targetId" />
+        <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+        <div class="mb-3">
+            <label class="form-label small text-muted">Powód zgłoszenia</label>
+            <textarea name="reason" class="form-control bg-dark text-white border-secondary" rows="5"
+                      maxlength="1000" required
+                      placeholder="Opisz, dlaczego zgłaszasz tę treść (np. spam, wulgaryzmy, łamanie zasad, mowa nienawiści...)"></textarea>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+            @if (!string.IsNullOrEmpty(returnUrl))
+            {
+                <a href="@returnUrl" class="btn btn-outline-secondary btn-sm">Anuluj</a>
+            }
+            <button type="submit" class="btn btn-gn-primary btn-sm px-4">Wyślij zgłoszenie</button>
+        </div>
+    </form>
+</section>
