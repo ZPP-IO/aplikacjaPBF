@@ -66,5 +66,6 @@ namespace ProjectPBF.Models
         public ICollection<InventoryItemModel> InventoryItems { get; set; } = new List<InventoryItemModel>();
         public ICollection<CharacterDevelopmentLogModel> DevelopmentLogs { get; set; } = new List<CharacterDevelopmentLogModel>();
         public ICollection<ActivityLogModel> ActivityLogs { get; set; } = new List<ActivityLogModel>();
+        public ICollection<WorldEventEffectModel> WorldEventEffects { get; set; } = new List<WorldEventEffectModel>();
     }
 }

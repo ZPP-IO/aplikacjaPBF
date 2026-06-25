@@ -25,6 +25,12 @@
 
                 <div class="col-md-8">
                     <h2>@Model.User.Nick</h2>
+                    @if (User.Identity?.IsAuthenticated == true && User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value != Model.User.Id.ToString())
+                    {
+                        <a asp-controller="Messages" asp-action="Conversation" asp-route-userId="@Model.User.Id" class="btn btn-sm btn-outline-primary mt-2">
+                            Wyślij wiadomość
+                        </a>
+                    }
                 </div>
             </div>
         </div>

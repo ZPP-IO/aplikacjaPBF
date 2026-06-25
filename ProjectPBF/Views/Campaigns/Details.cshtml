@@ -102,6 +102,21 @@
 
         <div class="gn-panel">
             <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2>Historia świata</h2>
+                <a asp-controller="WorldEvents" asp-action="Index" asp-route-campaignId="@Model.Id" class="btn btn-gn-secondary">Otwórz kronikę</a>
+            </div>
+            <p class="text-muted">Wojny, klęski, edykty i misje specjalne ogłoszone w trakcie kampanii.</p>
+            <div class="stat-chip-grid mb-3">
+                <span class="stat-chip">📖 Wydarzenia: <small>@Model.WorldEvents.Count</small></span>
+            </div>
+            @if (canManageCampaign)
+            {
+                <a asp-controller="WorldEvents" asp-action="Create" asp-route-campaignId="@Model.Id" class="btn btn-sm btn-success">+ Ogłoś wydarzenie</a>
+            }
+        </div>
+
+        <div class="gn-panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
                 <h2>Kalendarz kampanii</h2>
                 <a asp-controller="CalendarEvents" asp-action="Index" asp-route-scope="private" class="btn btn-gn-secondary">Otwórz kalendarz</a>
             </div>

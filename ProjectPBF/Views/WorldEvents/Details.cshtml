@@ -1,0 +1,125 @@
+﻿@model ProjectPBF.Models.WorldEventModel
+@using ProjectPBF.Models.Enums
+@{
+    ViewData["Title"] = Model.Title;
+    bool canManage = ViewBag.CanManage ?? false;
+    var eligibleCharacters = ViewBag.EligibleCharacters as List<ProjectPBF.Models.CharacterModel> ?? new();
+}
+
+<section class="page-panel">
+    <div class="page-heading align-items-start">
+        <div>
+            <span class="eyebrow">@Model.Campaign?.Title</span>
+            <h1 class="mb-1">@Model.Title</h1>
+            <p class="text-muted small mb-0">
+                Ogłoszone przez @(Model.CreatedByUser?.Nick ?? "MG") · @Model.CreatedAt.ToString("g")
+                @if (!string.IsNullOrWhiteSpace(Model.InGameDate))
+                {
+                    <span> · Data w świecie: @Model.InGameDate</span>
+                }
+            </p>
+        </div>
+        <a asp-action="Index" asp-route-campaignId="@Model.CampaignId" class="btn btn-outline-secondary btn-sm">Powrót do kroniki</a>
+    </div>
+
+    <div class="mt-4 reply-section p-4">
+        <h2 class="h5 text-uppercase reply-section-title mb-3">Opis</h2>
+        <p class="mb-0 skill-description-text">@Model.Description</p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.MechanicalImpactNote))
+    {
+        <div class="alert alert-dark mt-3">
+            <strong>Wpływ na mechanikę:</strong> @Model.MechanicalImpactNote
+        </div>
+    }
+
+    @* Formularz zastosowania efektu - tylko MG/Administrator zarzadzajacy kampania *@
+    @if (canManage)
+    {
+        <div class="mt-5">
+            <h2 class="h5 text-uppercase reply-section-title mb-3">Zastosuj efekt na postacie</h2>
+            <div class="reply-section p-4">
+                @if (eligibleCharacters.Any())
+                {
+                    <form asp-action="ApplyEffect" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="worldEventId" value="@Model.Id" />
+
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Postacie (wybierz jedną lub więcej)</label>
+                            <select name="characterIds" class="form-select" multiple size="6">
+                                @foreach (var character in eligibleCharacters)
+                                {
+                                    <option value="@character.Id">@character.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label small text-muted">EXP (+/-)</label>
+                                <input type="number" name="expChange" class="form-control" value="0" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label small text-muted">PH (+/-)</label>
+                                <input type="number" name="phChange" class="form-control" value="0" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label small text-muted">PK statystyk (+/-)</label>
+                                <input type="number" name="statPointsChange" class="form-control" value="0" />
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-gn-primary">Zastosuj efekt</button>
+                    </form>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">
+                        Wszystkie aktywne postacie z tej kampanii już otrzymały efekt tego wydarzenia.
+                    </p>
+                }
+            </div>
+        </div>
+    }
+
+    @* Historia zastosowanych efektow *@
+    <div class="mt-5">
+        <h2 class="h5 text-uppercase reply-section-title mb-3">Zastosowane efekty</h2>
+        <div class="gn-table-wrap">
+            <table class="table table-dark table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Postać</th>
+                        <th>EXP</th>
+                        <th>PH</th>
+                        <th>PK statystyk</th>
+                        <th>Zastosowano</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var effect in Model.Effects.OrderByDescending(e => e.AppliedAt))
+                    {
+                        <tr>
+                            <td>
+                                <a asp-controller="CharacterModels" asp-action="Details" asp-route-id="@effect.CharacterId">
+                                    @(effect.Character?.Name ?? "Nieznana postać")
+                                </a>
+                            </td>
+                            <td class="@(effect.ExperienceChange >= 0 ? "text-success" : "text-danger")">@(effect.ExperienceChange >= 0 ? "+" : "")@effect.ExperienceChange</td>
+                            <td class="@(effect.HistoryPointsChange >= 0 ? "text-success" : "text-danger")">@(effect.HistoryPointsChange >= 0 ? "+" : "")@effect.HistoryPointsChange</td>
+                            <td class="@(effect.StatisticPointsChange >= 0 ? "text-success" : "text-danger")">@(effect.StatisticPointsChange >= 0 ? "+" : "")@effect.StatisticPointsChange</td>
+                            <td class="text-muted small">@effect.AppliedAt.ToString("g") (@(effect.AppliedByUser?.Nick ?? "MG"))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Effects.Any())
+        {
+            <p class="text-muted small mt-3">To wydarzenie nie miało jeszcze zastosowanego żadnego efektu mechanicznego.</p>
+        }
+    </div>
+</section>

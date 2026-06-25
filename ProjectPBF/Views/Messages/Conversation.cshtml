@@ -1,0 +1,43 @@
+﻿@model List<ProjectPBF.Models.PrivateMessageModel>
+@using System.Security.Claims
+@{
+    var otherUser = (ProjectPBF.Models.UserModel)ViewBag.OtherUser;
+    ViewData["Title"] = $"Rozmowa z {otherUser.Nick}";
+    var currentUserIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    int.TryParse(currentUserIdStr, out var currentUserId);
+}
+
+<section class="page-panel narrow">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Wiadomości prywatne</span>
+            <h1>Rozmowa z @otherUser.Nick</h1>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Powrót do skrzynki</a>
+    </div>
+
+    <div class="message-thread-wrap mt-4">
+        @foreach (var m in Model)
+        {
+            var isMine = m.SenderId == currentUserId;
+            <div class="message-bubble @(isMine ? "message-bubble-mine" : "message-bubble-theirs")">
+                @m.Content
+                <span class="message-bubble-time">@m.SentAt.ToString("g")</span>
+            </div>
+        }
+
+        @if (!Model.Any())
+        {
+            <p class="text-muted small text-center mt-3">Brak wiadomości w tej rozmowie. Napisz pierwszą!</p>
+        }
+    </div>
+
+    <form asp-action="Send" method="post" class="mt-4">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="recipientId" value="@otherUser.Id" />
+        <div class="mb-3">
+            <textarea name="content" class="form-control" rows="3" maxlength="4000" placeholder="Napisz wiadomość..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-gn-primary">Wyślij</button>
+    </form>
+</section>

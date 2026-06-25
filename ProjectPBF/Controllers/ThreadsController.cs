@@ -16,11 +16,13 @@ namespace ProjectPBF.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly ActivityLogService _activityLogService;
+        private readonly NotificationService _notificationService;
 
-        public ThreadsController(ApplicationDbContext db, ActivityLogService activityLogService)
+        public ThreadsController(ApplicationDbContext db, ActivityLogService activityLogService, NotificationService notificationService)
         {
             _db = db;
             _activityLogService = activityLogService;
+            _notificationService = notificationService;
         }
 
         private int? GetCurrentUserId()
@@ -297,6 +299,8 @@ namespace ProjectPBF.Controllers
                     post.Id,
                     $"Dodano post w w¹tku o ID {threadId}"
                 );
+
+                await _notificationService.NotifyThreadRepliersAsync(threadId, currentUserId.Value, thread.Title);
             }
 
             return RedirectToAction("Details", new { id = threadId });

@@ -58,6 +58,23 @@ namespace ProjectPBF.Controllers
             var userIdText = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userIdText)) return Challenge();
 
+            await ApplyAwardAsync(_context, character, expChange, phChange, statPointsChange, reason, source, int.Parse(userIdText));
+
+            return RedirectToAction("Details", "CharacterModels", new { id = character.Id });
+        }
+
+        // Wspolna logika przyznawania EXP/PH/PK statystyk postaci, wraz z wpisem do logu rozwoju.
+        // Uzywana zarowno z formularza recznego przyznania (Award), jak i z efektow wydarzen swiatowych.
+        public static async Task ApplyAwardAsync(
+            ApplicationDbContext context,
+            CharacterModel character,
+            int expChange,
+            int phChange,
+            int statPointsChange,
+            string reason,
+            string? source,
+            int byUserId)
+        {
             var oldLevel = character.Level;
             character.Experience = Math.Max(0, character.Experience + expChange);
             character.HistoryPoints = Math.Max(0, character.HistoryPoints + phChange);
@@ -77,7 +94,7 @@ namespace ProjectPBF.Controllers
                 finalReason += $" | Awans o {levelUps} poziom(y): +{automaticPkFromLevel} PK statystyk.";
             }
 
-            _context.CharacterDevelopmentLogs.Add(new CharacterDevelopmentLogModel
+            context.CharacterDevelopmentLogs.Add(new CharacterDevelopmentLogModel
             {
                 CharacterId = character.Id,
                 ExperienceChange = expChange,
@@ -86,11 +103,10 @@ namespace ProjectPBF.Controllers
                 Reason = finalReason,
                 Source = source,
                 CreatedAt = DateTime.UtcNow,
-                CreatedByUserId = int.Parse(userIdText)
+                CreatedByUserId = byUserId
             });
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Details", "CharacterModels", new { id = character.Id });
+            await context.SaveChangesAsync();
         }
 
         [HttpPost]

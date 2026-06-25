@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectPBF.Data;
 
@@ -11,9 +12,11 @@ using ProjectPBF.Data;
 namespace ProjectPBF.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260625101042_AddNotificationsAndPrivateMessages")]
+    partial class AddNotificationsAndPrivateMessages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1666,99 +1669,6 @@ namespace ProjectPBF.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("ProjectPBF.Models.WorldEventEffectModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("AppliedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<int>("AppliedByUserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ExperienceChange")
-                        .HasColumnType("int");
-
-                    b.Property<int>("HistoryPointsChange")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StatisticPointsChange")
-                        .HasColumnType("int");
-
-                    b.Property<int>("WorldEventId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppliedByUserId");
-
-                    b.HasIndex("CharacterId");
-
-                    b.HasIndex("WorldEventId");
-
-                    b.ToTable("WorldEventEffects");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.WorldEventModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CampaignId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<int>("CreatedByUserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(6000)
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("InGameDate")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("MechanicalImpactNote")
-                        .HasMaxLength(3000)
-                        .HasColumnType("nvarchar(3000)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CampaignId");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.ToTable("WorldEvents");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
@@ -2284,52 +2194,6 @@ namespace ProjectPBF.Migrations
                     b.Navigation("ApprovedByUser");
                 });
 
-            modelBuilder.Entity("ProjectPBF.Models.WorldEventEffectModel", b =>
-                {
-                    b.HasOne("ProjectPBF.Models.UserModel", "AppliedByUser")
-                        .WithMany()
-                        .HasForeignKey("AppliedByUserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ProjectPBF.Models.CharacterModel", "Character")
-                        .WithMany("WorldEventEffects")
-                        .HasForeignKey("CharacterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjectPBF.Models.WorldEventModel", "WorldEvent")
-                        .WithMany("Effects")
-                        .HasForeignKey("WorldEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AppliedByUser");
-
-                    b.Navigation("Character");
-
-                    b.Navigation("WorldEvent");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.WorldEventModel", b =>
-                {
-                    b.HasOne("ProjectPBF.Models.CampaignModel", "Campaign")
-                        .WithMany("WorldEvents")
-                        .HasForeignKey("CampaignId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjectPBF.Models.UserModel", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Campaign");
-
-                    b.Navigation("CreatedByUser");
-                });
-
             modelBuilder.Entity("ProjectPBF.Models.CampaignModel", b =>
                 {
                     b.Navigation("ActivityLogs");
@@ -2353,8 +2217,6 @@ namespace ProjectPBF.Migrations
                     b.Navigation("SkillTemplates");
 
                     b.Navigation("Statistics");
-
-                    b.Navigation("WorldEvents");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.CharacterModel", b =>
@@ -2370,8 +2232,6 @@ namespace ProjectPBF.Migrations
                     b.Navigation("Skills");
 
                     b.Navigation("StatisticValues");
-
-                    b.Navigation("WorldEventEffects");
                 });
 
             modelBuilder.Entity("ProjectPBF.Models.ConflictRuleModel", b =>
@@ -2425,11 +2285,6 @@ namespace ProjectPBF.Migrations
                     b.Navigation("Characters");
 
                     b.Navigation("LedCampaigns");
-                });
-
-            modelBuilder.Entity("ProjectPBF.Models.WorldEventModel", b =>
-                {
-                    b.Navigation("Effects");
                 });
 #pragma warning restore 612, 618
         }

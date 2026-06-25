@@ -1,0 +1,43 @@
+﻿@using ProjectPBF.Controllers
+@{
+    ViewData["Title"] = "Wiadomości";
+    var conversations = ViewBag.Conversations as List<ConversationSummary> ?? new List<ConversationSummary>();
+}
+
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Skrzynka odbiorcza</span>
+            <h1>Wiadomości</h1>
+        </div>
+    </div>
+
+    <div class="threads-list mt-4">
+        @foreach (var c in conversations)
+        {
+            <a asp-controller="Messages" asp-action="Conversation" asp-route-userId="@c.OtherUser.Id"
+               class="conversation-list-item @(c.UnreadCount > 0 ? "conversation-list-unread" : "")">
+                <div>
+                    <strong>@c.OtherUser.Nick</strong>
+                    <div class="conversation-preview">@c.LastMessage.Content</div>
+                </div>
+                <div class="text-end">
+                    <div class="text-muted small">@c.LastMessage.SentAt.ToString("g")</div>
+                    @if (c.UnreadCount > 0)
+                    {
+                        <span class="gn-badge tag-important">@c.UnreadCount nowe</span>
+                    }
+                </div>
+            </a>
+        }
+    </div>
+
+    @if (!conversations.Any())
+    {
+        <div class="empty-state">
+            <span>✉️</span>
+            <h2>Brak wiadomości</h2>
+            <p>Odwiedź profil innego użytkownika, aby wysłać mu pierwszą wiadomość.</p>
+        </div>
+    }
+</section>

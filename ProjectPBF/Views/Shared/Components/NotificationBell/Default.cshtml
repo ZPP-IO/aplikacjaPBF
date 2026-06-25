@@ -1,0 +1,44 @@
+﻿@model ProjectPBF.ViewComponents.NotificationBellViewModel
+
+<div class="notification-bell-wrapper dropdown">
+    <button class="notification-bell-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="notification-bell-icon">🔔</span>
+        @if (Model.UnreadCount > 0)
+        {
+            <span class="notification-bell-badge">@(Model.UnreadCount > 9 ? "9+" : Model.UnreadCount.ToString())</span>
+        }
+    </button>
+
+    <div class="dropdown-menu dropdown-menu-end notification-dropdown">
+        <div class="notification-dropdown-header">
+            <span>Powiadomienia</span>
+            @if (Model.UnreadCount > 0)
+            {
+                <form asp-controller="Notifications" asp-action="MarkAllRead" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="notification-mark-all-btn">Oznacz wszystkie</button>
+                </form>
+            }
+        </div>
+
+        @if (Model.Recent.Any())
+        {
+            @foreach (var n in Model.Recent)
+            {
+                <form asp-controller="Notifications" asp-action="Open" asp-route-id="@n.Id" method="post" class="notification-item-form">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="notification-item @(n.IsRead ? "" : "notification-item-unread")">
+                        <span class="notification-item-message">@n.Message</span>
+                        <span class="notification-item-date">@n.CreatedAt.ToString("g")</span>
+                    </button>
+                </form>
+            }
+        }
+        else
+        {
+            <p class="notification-empty">Brak powiadomień.</p>
+        }
+
+        <a asp-controller="Notifications" asp-action="Index" class="notification-dropdown-footer">Zobacz wszystkie</a>
+    </div>
+</div>

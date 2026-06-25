@@ -30,6 +30,8 @@ namespace ProjectPBF.Data
         public DbSet<MissionProposalModel> MissionProposals { get; set; } = null!;
         public DbSet<MissionReviewModel> MissionReviews { get; set; } = null!;
         public DbSet<CalendarEventModel> CalendarEvents { get; set; } = null!;
+        public DbSet<WorldEventModel> WorldEvents { get; set; } = null!;
+        public DbSet<WorldEventEffectModel> WorldEventEffects { get; set; } = null!;
 
         // Nowe DbSety sesji i forum
         public DbSet<SessionModel> SessionModels { get; set; } = null!;
@@ -43,6 +45,8 @@ namespace ProjectPBF.Data
         public DbSet<ForumPostModel> ForumPosts { get; set; } = null!;
         public DbSet<ForumPostRevisionModel> ForumPostRevisions { get; set; } = null!;
         public DbSet<ActivityLogModel> ActivityLogs { get; set; } = null!;
+        public DbSet<PrivateMessageModel> PrivateMessages { get; set; } = null!;
+        public DbSet<NotificationModel> Notifications { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -528,6 +532,80 @@ namespace ProjectPBF.Data
                     .WithMany(x => x.ActivityLogs)
                     .HasForeignKey(x => x.CharacterId)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+            builder.Entity<WorldEventModel>(entity =>
+            {
+                entity.Property(x => x.Title).IsRequired().HasMaxLength(150);
+                entity.Property(x => x.Description).IsRequired().HasMaxLength(6000);
+                entity.Property(x => x.InGameDate).HasMaxLength(100);
+                entity.Property(x => x.MechanicalImpactNote).HasMaxLength(3000);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.HasIndex(x => x.CampaignId);
+                entity.HasIndex(x => x.CreatedAt);
+
+                entity.HasOne(x => x.Campaign)
+                    .WithMany(x => x.WorldEvents)
+                    .HasForeignKey(x => x.CampaignId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.CreatedByUser)
+                    .WithMany()
+                    .HasForeignKey(x => x.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<WorldEventEffectModel>(entity =>
+            {
+                entity.Property(x => x.AppliedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.HasIndex(x => x.WorldEventId);
+                entity.HasIndex(x => x.CharacterId);
+
+                entity.HasOne(x => x.WorldEvent)
+                    .WithMany(x => x.Effects)
+                    .HasForeignKey(x => x.WorldEventId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.Character)
+                    .WithMany(x => x.WorldEventEffects)
+                    .HasForeignKey(x => x.CharacterId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.AppliedByUser)
+                    .WithMany()
+                    .HasForeignKey(x => x.AppliedByUserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            // indeksy wyszukiwania i wydajności
+            builder.Entity<ForumThreadModel>().HasIndex(t => t.Title); builder.Entity<PrivateMessageModel>(entity =>
+            {
+                entity.Property(x => x.Content).IsRequired().HasMaxLength(4000);
+                entity.Property(x => x.SentAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.HasIndex(x => new { x.SenderId, x.RecipientId });
+                entity.HasIndex(x => x.SentAt);
+
+                entity.HasOne(x => x.Sender)
+                    .WithMany()
+                    .HasForeignKey(x => x.SenderId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(x => x.Recipient)
+                    .WithMany()
+                    .HasForeignKey(x => x.RecipientId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<NotificationModel>(entity =>
+            {
+                entity.Property(x => x.Message).IsRequired().HasMaxLength(300);
+                entity.Property(x => x.LinkUrl).IsRequired().HasMaxLength(300);
+                entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.HasIndex(x => new { x.UserId, x.IsRead });
+                entity.HasIndex(x => x.CreatedAt);
+
+                entity.HasOne(x => x.User)
+                    .WithMany()
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // indeksy wyszukiwania i wydajności

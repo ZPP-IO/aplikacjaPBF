@@ -1,0 +1,66 @@
+﻿@model IEnumerable<ProjectPBF.Models.WorldEventModel>
+@using ProjectPBF.Models.Enums
+@{
+    ViewData["Title"] = "Historia świata";
+    var campaignId = ViewBag.CampaignId as int?;
+}
+
+<section class="page-panel">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <span class="eyebrow">Kronika kampanii</span>
+            <h1>Historia świata</h1>
+            <p class="text-muted">Wojny, klęski, edykty i misje specjalne ogłoszone przez Mistrzów Gry.</p>
+        </div>
+        @if (campaignId.HasValue)
+        {
+            <a asp-action="Create" asp-route-campaignId="@campaignId.Value" class="btn btn-gn-primary">+ Ogłoś wydarzenie</a>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="gn-panel"><p>Brak zapisanych wydarzeń światowych.</p></div>
+    }
+    else
+    {
+        <div class="details-grid">
+            @foreach (var ev in Model)
+            {
+                <div class="gn-panel">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <div>
+                            <span class="eyebrow">@ev.Campaign?.Title</span>
+                            <h2>@ev.Title</h2>
+                        </div>
+                        <span class="gn-badge tag-ooc">@TypeLabel(ev.Type)</span>
+                    </div>
+                    <p class="skill-description-text">@ev.Description</p>
+                    <p class="text-muted small">
+                        @if (!string.IsNullOrWhiteSpace(ev.InGameDate))
+                        {
+                            <span>Data w świecie: @ev.InGameDate · </span>
+                        }
+                        Ogłoszone przez: @(ev.CreatedByUser?.Nick ?? "MG") · @ev.CreatedAt.ToString("g")
+                        @if (ev.Effects.Any())
+                        {
+                            <span> · Efekt zastosowano dla @ev.Effects.Count postaci</span>
+                        }
+                    </p>
+                    <a asp-action="Details" asp-route-id="@ev.Id" class="btn btn-gn-secondary">Szczegóły</a>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+@functions {
+    string TypeLabel(WorldEventType type) => type switch
+    {
+        WorldEventType.War => "Wojna",
+        WorldEventType.SpecialMission => "Misja specjalna",
+        WorldEventType.Disaster => "Klęska",
+        WorldEventType.PoliticalChange => "Zmiana polityczna",
+        _ => "Inne"
+    };
+}

@@ -119,6 +119,7 @@ namespace ProjectPBF.Controllers
                 .Include(c => c.CalendarEvents)
                 .Include(c => c.CampaignCharacters).ThenInclude(cc => cc.Character)
                 .Include(c => c.Sessions).ThenInclude(s => s.GameMaster)
+                .Include(c => c.WorldEvents)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (campaign == null) return NotFound();

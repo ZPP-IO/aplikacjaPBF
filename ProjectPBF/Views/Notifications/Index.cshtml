@@ -1,0 +1,45 @@
+﻿@model List<ProjectPBF.Models.NotificationModel>
+@{
+    ViewData["Title"] = "Powiadomienia";
+    var unreadCount = Model.Count(n => !n.IsRead);
+}
+
+<section class="page-panel">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Centrum powiadomień</span>
+            <h1>Powiadomienia</h1>
+        </div>
+        @if (unreadCount > 0)
+        {
+            <form asp-action="MarkAllRead" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Oznacz wszystkie jako przeczytane</button>
+            </form>
+        }
+    </div>
+
+    <div class="threads-list mt-4">
+        @foreach (var n in Model)
+        {
+            <form asp-action="Open" asp-route-id="@n.Id" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="forum-card mb-2 thread-row notification-list-row w-100 text-start @(n.IsRead ? "" : "notification-item-unread")">
+                    <div class="forum-card-body p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <span>@n.Message</span>
+                        <span class="text-muted small">@n.CreatedAt.ToString("g")</span>
+                    </div>
+                </button>
+            </form>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <span>🔔</span>
+            <h2>Brak powiadomień</h2>
+            <p>Tutaj będą pojawiać się informacje o nowych odpowiedziach i wiadomościach prywatnych.</p>
+        </div>
+    }
+</section>

@@ -21,29 +21,52 @@
                             <li class="nav-item"><a class="nav-link" asp-controller="Campaigns" asp-action="Browse">Kampanie</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Forums">Fora</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="CharacterModels" asp-action="Index">Moje postacie</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Ranking" asp-action="Index">Ranking</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="CalendarEvents" asp-action="Index">Kalendarz</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="MissionProposals" asp-action="Index">Misje</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="ConflictRules" asp-action="Index">Zasady</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Users" asp-action="Index">Społeczność</a></li>
 
-                            @if (User.IsInRole("Administrator"))
-                            {
-                                <li class="nav-item"><a class="nav-link" asp-controller="AdminPanel" asp-action="Index">Okno admina</a></li>
-                            }
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Świat gry</a>
+                                <ul class="dropdown-menu gn-dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Ranking" asp-action="Index">Ranking</a></li>
+                                    <li><a class="dropdown-item" asp-controller="CalendarEvents" asp-action="Index">Kalendarz</a></li>
+                                    <li><a class="dropdown-item" asp-controller="MissionProposals" asp-action="Index">Misje</a></li>
+                                    <li><a class="dropdown-item" asp-controller="ConflictRules" asp-action="Index">Zasady</a></li>
+                                    <li><a class="dropdown-item" asp-controller="WorldEvents" asp-action="Index">Historia świata</a></li>
+                                </ul>
+                            </li>
 
-                            @if (User.Identity?.IsAuthenticated == true)
-                            {
-                                <li class="nav-item"><a class="nav-link" asp-controller="ActivityLogs" asp-action="Index">Log aktywności</a></li>
+                            @{
+                                var canSeeManagement = User.Identity?.IsAuthenticated == true;
                             }
-
-                            @if (User.IsInRole("Administrator") || User.IsInRole("GameMaster"))
+                            @if (canSeeManagement)
                             {
-                                <li class="nav-item"><a class="nav-link" asp-controller="UserApproval" asp-action="Index">Akceptacja</a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="CharacterSkills" asp-action="Pending">Zatwierdzanie umiejętności</a></li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Zarządzanie</a>
+                                    <ul class="dropdown-menu gn-dropdown-menu">
+                                        @if (User.Identity?.IsAuthenticated == true)
+                                        {
+                                            <li><a class="dropdown-item" asp-controller="ActivityLogs" asp-action="Index">Log aktywności</a></li>
+                                        }
+                                        @if (User.IsInRole("Administrator"))
+                                        {
+                                            <li><a class="dropdown-item" asp-controller="AdminPanel" asp-action="Index">Okno admina</a></li>
+                                        }
+                                        @if (User.IsInRole("Administrator") || User.IsInRole("GameMaster"))
+                                        {
+                                            <li><a class="dropdown-item" asp-controller="UserApproval" asp-action="Index">Akceptacja</a></li>
+                                            <li><a class="dropdown-item" asp-controller="CharacterSkills" asp-action="Pending">Zatwierdzanie umiejętności</a></li>
+                                        }
+                                    </ul>
+                                </li>
                             }
                         </ul>
-                        <div class="gn-actions"><partial name="_LoginPartial" /></div>
+                        <div class="gn-actions">
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <a class="gn-icon-link" asp-controller="Messages" asp-action="Index" title="Wiadomości">✉️</a>
+                                <vc:notification-bell></vc:notification-bell>
+                            }
+                            <partial name="_LoginPartial" />
+                        </div>
                     </div>
                 </div>
             </nav>

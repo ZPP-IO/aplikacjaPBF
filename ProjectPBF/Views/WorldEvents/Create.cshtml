@@ -1,0 +1,57 @@
+﻿@model ProjectPBF.Models.WorldEventModel
+@using ProjectPBF.Models.Enums
+@{
+    var campaign = (ProjectPBF.Models.CampaignModel)ViewBag.Campaign;
+    ViewData["Title"] = "Ogłoś wydarzenie";
+}
+
+<section class="page-panel narrow">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">@campaign.Title</span>
+            <h1>Ogłoś wydarzenie światowe</h1>
+        </div>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <form asp-action="Create" method="post" class="mt-3">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="campaignId" value="@campaign.Id" />
+
+        <div class="mb-3">
+            <label class="form-label">Tytuł wydarzenia</label>
+            <input name="title" value="@Model.Title" class="form-control" maxlength="150" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Typ wydarzenia</label>
+            <select name="type" class="form-select" asp-items="Html.GetEnumSelectList<WorldEventType>()"></select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Data w świecie (opcjonalna)</label>
+            <input name="inGameDate" value="@Model.InGameDate" class="form-control" maxlength="100" placeholder="np. 14. dzień Żniwnia, Rok 3 Ery Popiołu" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Opis wydarzenia</label>
+            <textarea name="description" class="form-control" rows="8" maxlength="6000" required>@Model.Description</textarea>
+            <p class="text-muted small mt-2">Co się stało, kto był zaangażowany, jakie są konsekwencje fabularne.</p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Opisowy wpływ na mechanikę (opcjonalny)</label>
+            <textarea name="mechanicalImpactNote" class="form-control" rows="4" maxlength="3000">@Model.MechanicalImpactNote</textarea>
+            <p class="text-muted small mt-2">
+                Np. "Uczestnicy obrony miasta otrzymują +50 EXP". Konkretne punkty będziesz mógł przyznać
+                wybranym postaciom na stronie szczegółów wydarzenia.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-gn-primary">Ogłoś wydarzenie</button>
+            <a asp-action="Index" asp-route-campaignId="@campaign.Id" class="btn btn-outline-secondary">Anuluj</a>
+        </div>
+    </form>
+</section>
