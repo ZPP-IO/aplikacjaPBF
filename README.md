@@ -28,7 +28,7 @@
    - [X]    Możliwość zgłaszania misji/fabuł i oceniania ich przez innych graczy o rolach werdyktujących.
    - [X]    Mechanizm prywatnych wiadomości między graczami.​ **[Kacper]**
    - [X]    Możliwość oznaczania wątków i postów (np. spoiling, ważne informacje).​ **[Patryk]**
-   - [ ]    System zgłaszania postów do moderacji. **[Kacper]**
+   - [X]    System zgłaszania postów do moderacji. **[Kacper]**
    - [X]    Powiadomienia o odpowiedziach w wątkach i wiadomościach prywatnych.​
    - [50//50 Dokończ (dodawanie postów, edycje, usuwanie) albo nie chuj wie  ]    Log aktywności (dodawanie postów, edycje, usuwanie).​**[Daniel]**
    - [X]    Rangi i uprawnienia różnych ról (MG, admin, gracz).
@@ -46,3 +46,16 @@
    - [ ]    Samouczki dla nowych graczy i FAQ.​
    - [ ]    Mapy, tabele, materiały graficzne lub PDF.​
    - [ ]    Sekcja pomysłów / propozycji rozgrywki.
+  
+3. Dane logowania:
+   
+      Admin:
+   ```
+      admin@local.test
+      Admin123!
+   ```
+      Test:
+   ```
+      test@test.test
+      Test123!
+   ```
